@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>音声認識 実機テスト</title>
+<title>音声認識 実機テスト 2</title>
 <style>
   :root{
     color-scheme: light dark;
@@ -54,65 +54,48 @@
   button:active{transform:scale(.985);}
   button:focus-visible{outline:2px solid var(--text); outline-offset:2px;}
   button[disabled]{opacity:.4; cursor:default;}
-  .primary{width:100%; padding:20px; font-size:1.05rem; font-weight:600; border-width:1px; border-color:var(--text);}
+  .primary{width:100%; padding:20px; font-size:1.05rem; font-weight:600; border-width:1px; border-color:var(--text); font-variant-numeric:tabular-nums;}
   .primary.live{border-color:var(--wait); color:var(--wait);}
-  label{display:block; font-size:.8125rem; color:var(--muted); margin:14px 0 6px;}
+  label, .lbl{display:block; font-size:.8125rem; color:var(--muted); margin:16px 0 6px;}
   select, input[type=range]{width:100%; font:inherit; color:var(--text); background:var(--bg);
     border:0.5px solid var(--line); border-radius:10px; padding:10px 12px;}
-  .toggles{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
-  .toggles button{flex:1 1 0; min-width:120px; font-size:.8125rem; padding:10px 8px;}
-  .toggles button[aria-pressed=true]{border-color:var(--text); font-weight:600;}
+  .seg{display:flex; gap:8px; flex-wrap:wrap;}
+  .seg button{flex:1 1 0; min-width:88px; font-size:.8125rem; padding:10px 8px;}
+  .seg button[aria-pressed=true]{border-color:var(--text); font-weight:600;}
   .say{
     font-family:ui-serif,Georgia,"Times New Roman",serif;
     font-size:1.5rem; line-height:1.35; margin:16px 0 4px; letter-spacing:.01em;
   }
-  .sayNote{font-size:.8125rem; color:var(--muted); margin-bottom:18px;}
-  .verdict{font-size:1.05rem; font-weight:600; margin:14px 0 6px;}
-  .heard{font-size:.9375rem; word-break:break-word;}
-  .heard span{color:var(--muted); font-size:.8125rem;}
+  .sayNote{font-size:.8125rem; color:var(--muted); margin-bottom:6px;}
+  .verdict{font-size:1.05rem; font-weight:600; margin:16px 0 6px;}
+  .heard{font-size:.9375rem; word-break:break-word; margin-bottom:8px;}
+  .heard span, .meta{color:var(--muted); font-size:.8125rem;}
+  .diff{font-size:.9375rem; margin-bottom:6px;}
+  .diff b{font-weight:600; color:var(--fail);}
   table{width:100%; border-collapse:collapse; font-size:.75rem; font-variant-numeric:tabular-nums;}
   th,td{text-align:left; padding:6px 6px 6px 0; border-top:0.5px solid var(--line); vertical-align:top;}
   th{color:var(--muted); font-weight:500;}
   .logwrap{overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:4px;}
   .actions{display:flex; gap:8px; margin-top:14px;}
   .actions button{flex:1;}
+  details{margin-top:16px; font-size:.875rem;}
+  summary{color:var(--muted); cursor:pointer; padding:4px 0;}
   ol{margin:0; padding-left:1.3em; font-size:.875rem; color:var(--muted);}
   ol li{margin-bottom:8px;}
-  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.85em;}
 </style>
 </head>
 <body>
 <main>
-  <h1>音声認識 実機テスト</h1>
-  <p class="lede">Web Speech API のオンデバイス処理とコンテキスト・バイアシングが、この端末で実際に使えるかを確かめます。</p>
+  <h1>音声認識 実機テスト 2</h1>
+  <p class="lede">話し始めを待つ時間の延長と、途中で詰まったときの聞き続けを試します。聞き取った文と正解文の違いを語単位で表示します。</p>
 
   <section>
-    <h2>この端末</h2>
-    <dl id="env"></dl>
-  </section>
-
-  <section>
-    <h2>段階1　APIがあるか</h2>
-    <dl id="exist"></dl>
-  </section>
-
-  <section>
-    <h2>段階2　オンデバイス用の言語パック</h2>
-    <dl id="ondevice"><div class="row"><dt>状態</dt><dd class="muted">未実行</dd></div></dl>
-    <div class="actions">
-      <button id="btnAvail">状態を調べる</button>
-      <button id="btnInstall">導入する</button>
-    </div>
-    <p class="sayNote" style="margin-top:14px">導入が30秒で終わらない場合は打ち切ります。APIはあるのに裏側が繋がっていない端末があるためです。</p>
-  </section>
-
-  <section>
-    <h2>段階3　発話して確かめる</h2>
+    <h2>発話して確かめる</h2>
 
     <label for="sent">文</label>
     <select id="sent"></select>
 
-    <div class="toggles" role="group" aria-label="発話の種類">
+    <div class="seg" role="group" aria-label="発話の種類" style="margin-top:14px">
       <button id="modeOk" aria-pressed="true">お手本どおり言う</button>
       <button id="modeNg" aria-pressed="false">わざと崩して言う</button>
     </div>
@@ -120,27 +103,43 @@
     <p class="say" id="sayText"></p>
     <p class="sayNote" id="sayNote"></p>
 
-    <div class="toggles" role="group" aria-label="認識の設定">
-      <button id="tgLocal" aria-pressed="false">端末内で処理</button>
-      <button id="tgPhrases" aria-pressed="true">ヒントを渡す</button>
+    <span class="lbl">話し始めを待つ時間</span>
+    <div class="seg" role="group" aria-label="話し始めを待つ時間" id="waitSeg">
+      <button data-wait="0" aria-pressed="false">標準（約3秒）</button>
+      <button data-wait="8000" aria-pressed="true">8秒</button>
+      <button data-wait="15000" aria-pressed="false">15秒</button>
     </div>
 
-    <label for="boost">ヒントの強さ（boost）<span id="boostVal">2.0</span></label>
-    <input type="range" id="boost" min="1" max="6" step="0.5" value="2">
+    <span class="lbl">途中で言葉に詰まったとき</span>
+    <div class="seg" role="group" aria-label="途中で詰まったとき" id="contSeg">
+      <button data-cont="0" aria-pressed="true">そこで終わる</button>
+      <button data-cont="1" aria-pressed="false">聞き続ける</button>
+    </div>
 
-    <button class="primary" id="btnRec" style="margin-top:20px">話す</button>
+    <button class="primary" id="btnRec" style="margin-top:22px">話す</button>
 
     <div id="result" hidden>
       <p class="verdict" id="verdict"></p>
+      <p class="diff" id="diff"></p>
       <p class="heard" id="heard"></p>
+      <p class="meta" id="meta"></p>
     </div>
+
+    <details>
+      <summary>その他の設定</summary>
+      <dl id="env" style="margin-top:8px"></dl>
+      <div class="seg" style="margin-top:12px">
+        <button id="tgLocal" aria-pressed="false">端末内で処理</button>
+        <button id="tgPhrases" aria-pressed="false" hidden>ヒントを渡す</button>
+      </div>
+    </details>
   </section>
 
   <section>
-    <h2>記録　<span id="count" style="color:var(--muted);font-weight:400"></span></h2>
+    <h2>記録　<span id="count" class="muted" style="font-weight:400"></span></h2>
     <div class="logwrap">
       <table>
-        <thead><tr><th>文</th><th>発話</th><th>結果</th><th>聞き取り</th><th>ms</th></tr></thead>
+        <thead><tr><th>文</th><th>発話</th><th>結果</th><th>違い</th><th>待ち</th></tr></thead>
         <tbody id="log"></tbody>
       </table>
     </div>
@@ -153,32 +152,29 @@
   <section>
     <h2>確かめる順番</h2>
     <ol>
-      <li>段階1と段階2を通す。段階2が「利用可能」にならなければ「端末内で処理」を切って段階3へ進む（クラウド経由の認識になる）。</li>
-      <li>10文を「お手本どおり」に3回ずつ。9割が一致すれば実用になる。</li>
-      <li>同じ10文を「わざと崩して」1回ずつ。ここで一致してしまうならヒントが効きすぎている。</li>
-      <li>boost を 1.0 / 2.0 / 3.0 / 5.0 に変えて 2 と 3 を繰り返し、両方を満たす値を探す。</li>
-      <li>ホーム画面に追加して起動し、マイクの許可が残るか確かめる。</li>
-      <li>機内モードにして段階3が動くか確かめる。動けば本当に端末内で処理されている。</li>
+      <li>待ち時間を「8秒」にして、「話す」を押してから5秒ほど黙ってから話す。途中で打ち切られず、再開の音が気にならないかを見る。</li>
+      <li>「聞き続ける」にして、文の途中でわざと2秒止まってから続きを言う。文全体が1つにつながって聞き取られるかを見る。</li>
+      <li>S0004 と S0009 を、L の音を意識して数回ずつ言う。「違い」の欄に何が出るかを見る。</li>
+      <li>できればお子さん本人にも同じことをしてもらう。</li>
     </ol>
   </section>
 </main>
-
 <script>
 (() => {
 'use strict';
 
 /* ---------- 検証に使う10文 ---------- */
 const SENTENCES = [
-  { id:'S0001', ok:'I am a soccer fan.',                 ng:'I am a tennis fan.',            note:'fan を別の名詞に置き換えた' },
-  { id:'S0002', ok:'I can see you tomorrow morning.',     ng:'I can see you tomorrow evening.',note:'morning を evening に' },
-  { id:'S0003', ok:'You will be able to swim soon.',      ng:'You will be able to sing soon.', note:'swim を sing に' },
+  { id:'S0001', ok:'I am a soccer fan.',                 ng:'I am a tennis fan.',             note:'soccer を tennis に' },
+  { id:'S0002', ok:'I can see you tomorrow morning.',     ng:'I can see you tomorrow evening.', note:'morning を evening に' },
+  { id:'S0003', ok:'You will be able to swim soon.',      ng:'You will be able to sing soon.',  note:'swim を sing に' },
   { id:'S0004', ok:'She could play the violin at five.',  ng:'She could play the piano at five.',note:'violin を piano に' },
   { id:'S0005', ok:'You can enter if you have a ticket.', ng:'You can enter if you have a card.',note:'ticket を card に' },
-  { id:'S0006', ok:"You can't park your car here.",       ng:'You can park your car here.',    note:"can't を can に（否定の脱落）" },
-  { id:'S0007', ok:'Can I turn on the radio?',            ng:'Can I turn off the radio?',      note:'on を off に' },
-  { id:'S0008', ok:'Can you open the window?',            ng:'Can I open the window?',         note:'依頼を許可に（you → I）' },
-  { id:'S0009', ok:'Could you lend me the book?',         ng:'Could you borrow me the book?',  note:'lend を borrow に' },
-  { id:'S0010', ok:'May I use your bathroom?',            ng:'May I use my bathroom?',         note:'your を my に' },
+  { id:'S0006', ok:"You can't park your car here.",       ng:'You can park your car here.',     note:"can't を can に" },
+  { id:'S0007', ok:'Can I turn on the radio?',            ng:'Can I turn off the radio?',       note:'on を off に' },
+  { id:'S0008', ok:'Can you open the window?',            ng:'Can I open the window?',          note:'you を I に' },
+  { id:'S0009', ok:'Could you lend me the book?',         ng:'Could you borrow me the book?',   note:'lend を borrow に' },
+  { id:'S0010', ok:'May I use your bathroom?',            ng:'May I use my bathroom?',          note:'your を my に' },
 ];
 
 /* ---------- 正規化（本番アプリと同じ規則） ---------- */
@@ -201,16 +197,52 @@ const NO_APOS = [
   [/\byoull\b/g,'you will'],[/\btheyll\b/g,'they will'],[/\bweve\b/g,'we have'],
   [/\bive\b/g,'i have'],[/\byouve\b/g,'you have'],[/\bim\b/g,'i am'],
 ];
-const NUM = ['zero','one','two','three','four','five','six','seven','eight','nine','ten',
-  'eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'];
+const ONES = ['zero','one','two','three','four','five','six','seven','eight','nine','ten',
+  'eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const TENS = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+function numWords(n){ if (n < 20) return ONES[n]; const o = n % 10; return TENS[Math.floor(n/10)] + (o ? ' ' + ONES[o] : ''); }
 
 function normalize(s){
   let t = (s || '').toLowerCase().replace(/[\u2018\u2019\u02bc]/g, "'");
+  // 時刻表記：認識器は "at five" を "at 5:00" と書き起こすことがある
+  t = t.replace(/\b(\d{1,2}):00\b/g, '$1').replace(/\b(\d{1,2}):(\d{2})\b/g, '$1 $2');
   for (const [re, to] of CONTRACTIONS) t = t.replace(re, to);
   t = t.replace(/[^a-z0-9\s]/g, ' ');
   for (const [re, to] of NO_APOS) t = t.replace(re, to);
-  t = t.replace(/\b(\d{1,2})\b/g, (m, d) => (NUM[+d] !== undefined ? NUM[+d] : m));
+  t = t.replace(/\b(\d{1,2})\b/g, (m, d) => numWords(+d));
   return t.replace(/\s+/g, ' ').trim();
+}
+
+/* ---------- 語単位の違い（正解文 → 聞き取り） ---------- */
+function wordDiff(targetN, heardN){
+  const a = targetN ? targetN.split(' ') : [];
+  const b = heardN ? heardN.split(' ') : [];
+  const n = a.length, m = b.length;
+  const D = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = 0; i <= n; i++) D[i][0] = i;
+  for (let j = 0; j <= m; j++) D[0][j] = j;
+  for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) {
+    D[i][j] = Math.min(D[i-1][j] + 1, D[i][j-1] + 1, D[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  }
+  const ops = []; let i = n, j = m;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && D[i][j] === D[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)) {
+      if (a[i-1] !== b[j-1]) ops.push({ t:'sub', from:a[i-1], to:b[j-1] });
+      i--; j--;
+    } else if (i > 0 && D[i][j] === D[i-1][j] + 1) {
+      ops.push({ t:'del', from:a[i-1] }); i--;
+    } else {
+      ops.push({ t:'ins', to:b[j-1] }); j--;
+    }
+  }
+  return ops.reverse();
+}
+function diffText(ops){
+  return ops.map(o => o.t === 'sub' ? `${o.from}→${o.to}` : o.t === 'del' ? `${o.from}が抜け` : `${o.to}が余分`).join('、');
+}
+// 正解文が、前後に余計な語を挟んでそのまま含まれているか
+function containsTarget(heardN, targetN){
+  return (' ' + heardN + ' ').includes(' ' + targetN + ' ');
 }
 
 /* ---------- 表示ヘルパ ---------- */
@@ -222,91 +254,29 @@ function row(dl, label, value, cls){
   if (cls) dd.className = cls;
   d.append(dt, dd); dl.append(d);
 }
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+function press(groupEl, btn){ groupEl.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === btn))); }
 
-/* ---------- 段階1：環境とAPIの有無 ---------- */
+/* ---------- 環境 ---------- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const hasPhraseCtor = typeof window.SpeechRecognitionPhrase !== 'undefined';
 
 (function showEnv(){
   const dl = $('env');
   const ua = navigator.userAgent;
-  const chrome = (ua.match(/Chrome\/([\d.]+)/) || [])[1];
-  const standalone = matchMedia('(display-mode: standalone)').matches;
-  row(dl, 'Chrome', chrome || '不明', chrome ? '' : 'fail');
+  row(dl, 'Chrome', (ua.match(/Chrome\/([\d.]+)/) || [])[1] || '不明');
   row(dl, 'OS', /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : 'その他');
   row(dl, '安全なコンテキスト', isSecureContext ? 'はい' : 'いいえ（HTTPSが必要）', isSecureContext ? 'pass' : 'fail');
-  row(dl, '起動のしかた', standalone ? 'ホーム画面から' : 'ブラウザのタブ');
-  row(dl, '通信', navigator.onLine ? 'オンライン' : 'オフライン');
-  if (navigator.permissions) {
-    navigator.permissions.query({ name: 'microphone' })
-      .then(p => row(dl, 'マイクの許可', p.state === 'granted' ? '許可済み' : p.state === 'denied' ? '拒否' : '未確認',
-                     p.state === 'granted' ? 'pass' : p.state === 'denied' ? 'fail' : ''))
-      .catch(() => {});
-  }
+  row(dl, 'ヒント（phrases）', hasPhraseCtor ? 'あり' : 'なし');
+  if (hasPhraseCtor) $('tgPhrases').hidden = false;
+  if (!SR) { $('btnRec').disabled = true; row(dl, 'SpeechRecognition', 'なし', 'fail'); }
 })();
 
-(function showExist(){
-  const dl = $('exist');
-  const p = SR && SR.prototype;
-  const checks = [
-    ['SpeechRecognition', !!SR],
-    ['processLocally', !!p && 'processLocally' in p],
-    ['phrases', !!p && 'phrases' in p],
-    ['SpeechRecognitionPhrase', hasPhraseCtor],
-    ['available()', !!SR && typeof SR.available === 'function'],
-    ['install()', !!SR && typeof SR.install === 'function'],
-  ];
-  for (const [name, ok] of checks) row(dl, name, ok ? 'あり' : 'なし', ok ? 'pass' : 'fail');
-  if (!SR) {
-    $('btnRec').disabled = true;
-    $('btnAvail').disabled = true;
-    $('btnInstall').disabled = true;
-  }
-})();
-
-/* ---------- 段階2：言語パック ---------- */
-const OPTS = { langs: ['en-US'], processLocally: true };
-const AVAIL_JA = { available:'利用可能', downloading:'取得中', downloadable:'未取得（導入が必要）', unavailable:'この端末では使えない' };
-
-function setOnDevice(label, value, cls){
-  const dl = $('ondevice'); dl.innerHTML = '';
-  row(dl, label, value, cls);
-}
-
-$('btnAvail').addEventListener('click', async () => {
-  setOnDevice('状態', '確認中…', 'wait');
-  try {
-    const r = await SR.available(OPTS);
-    setOnDevice('状態', AVAIL_JA[r] || String(r), r === 'available' ? 'pass' : r === 'unavailable' ? 'fail' : 'wait');
-  } catch (e) {
-    setOnDevice('状態', 'エラー：' + e.name, 'fail');
-  }
-});
-
-$('btnInstall').addEventListener('click', async () => {
-  setOnDevice('導入', '実行中（最大30秒）…', 'wait');
-  const t0 = performance.now();
-  try {
-    const r = await Promise.race([
-      SR.install(OPTS),
-      new Promise(res => setTimeout(() => res('__timeout'), 30000)),
-    ]);
-    const ms = Math.round(performance.now() - t0);
-    if (r === '__timeout') {
-      setOnDevice('導入', '30秒で応答なし。裏側が繋がっていない可能性が高い', 'fail');
-    } else {
-      setOnDevice('導入', (r ? '完了' : '失敗') + `（${ms}ms）`, r ? 'pass' : 'fail');
-    }
-  } catch (e) {
-    setOnDevice('導入', 'エラー：' + e.name, 'fail');
-  }
-});
-
-/* ---------- 段階3：発話テスト ---------- */
-let mode = 'ok';
-let useLocal = false;
-let usePhrases = true;
-let boost = 2.0;
+/* ---------- 設定 ---------- */
+let mode = 'ok', useLocal = false, usePhrases = false;
+let waitLimit = 8000, contMode = false;
+const SILENCE_AFTER_SPEECH = 2500;   // 聞き続けるモードで、最後の聞き取りからこの時間黙ったら終わる
+const HARD_CAP = 30000;
 
 const sel = $('sent');
 SENTENCES.forEach((s, i) => {
@@ -314,175 +284,210 @@ SENTENCES.forEach((s, i) => {
   o.value = String(i); o.textContent = `${s.id}　${s.ok}`;
   sel.append(o);
 });
-
 function refreshPrompt(){
   const s = SENTENCES[+sel.value];
   $('sayText').textContent = mode === 'ok' ? s.ok : s.ng;
-  $('sayNote').textContent = mode === 'ok'
-    ? '一致すれば合格。'
-    : `${s.note}。ここで一致してしまうとヒントが効きすぎている。`;
+  $('sayNote').textContent = mode === 'ok' ? '一致すれば合格。' : `${s.note}。一致しなければ合格。`;
   $('result').hidden = true;
 }
 sel.addEventListener('change', refreshPrompt);
-
-$('modeOk').addEventListener('click', () => { mode = 'ok'; $('modeOk').setAttribute('aria-pressed','true'); $('modeNg').setAttribute('aria-pressed','false'); refreshPrompt(); });
-$('modeNg').addEventListener('click', () => { mode = 'ng'; $('modeOk').setAttribute('aria-pressed','false'); $('modeNg').setAttribute('aria-pressed','true'); refreshPrompt(); });
+$('modeOk').addEventListener('click', e => { mode = 'ok'; press(e.target.parentElement, e.target); refreshPrompt(); });
+$('modeNg').addEventListener('click', e => { mode = 'ng'; press(e.target.parentElement, e.target); refreshPrompt(); });
+$('waitSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; waitLimit = +b.dataset.wait; press($('waitSeg'), b); });
+$('contSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; contMode = b.dataset.cont === '1'; press($('contSeg'), b); });
 $('tgLocal').addEventListener('click', () => { useLocal = !useLocal; $('tgLocal').setAttribute('aria-pressed', String(useLocal)); });
 $('tgPhrases').addEventListener('click', () => { usePhrases = !usePhrases; $('tgPhrases').setAttribute('aria-pressed', String(usePhrases)); });
-$('boost').addEventListener('input', e => { boost = +e.target.value; $('boostVal').textContent = boost.toFixed(1); });
 
-function buildPhrases(text){
-  if (!hasPhraseCtor) return null;
-  let list = null;
-  try { list = [new SpeechRecognitionPhrase(text, boost)]; }
-  catch (e) {
-    try { list = [new SpeechRecognitionPhrase({ phrase: text, boost })]; } catch (e2) { return null; }
-  }
-  if (typeof window.SpeechRecognitionPhraseList !== 'undefined') {
-    try { return new SpeechRecognitionPhraseList(list); } catch (e) { /* 配列のまま返す */ }
-  }
-  return list;
-}
+/* ---------- 認識セッション ----------
+   1回の「話す」＝1セッション。中で SpeechRecognition を何度か作り直す。
+   ・話し始める前に打ち切られたら、待ち時間の上限まで自動で再開
+   ・聞き続けるモードでは、途中で切れても再開し、確定した断片をつなぐ
+*/
+let S = null;
 
-let running = false;
-$('btnRec').addEventListener('click', () => { running ? stop() : start(); });
+function setBtn(text, live){ $('btnRec').textContent = text; $('btnRec').classList.toggle('live', !!live); }
 
-let rec = null, guard = null, t0 = 0, tSpeechEnd = 0, phraseNote = '';
+$('btnRec').addEventListener('click', () => {
+  if (S && !S.done) { S.userStopped = true; try { S.rec && S.rec.stop(); } catch (e) {} return; }
+  startSession();
+});
 
-function setBtn(text, live){
-  $('btnRec').textContent = text;
-  $('btnRec').classList.toggle('live', !!live);
-}
-
-function start(){
+function startSession(){
   const s = SENTENCES[+sel.value];
-  const target = s.ok;                 // 判定はつねに正解文に対して行う
-  const spoken = mode === 'ok' ? s.ok : s.ng;
-
-  rec = new SR();
-  rec.lang = 'en-US';
-  rec.continuous = false;
-  rec.interimResults = false;
-  rec.maxAlternatives = 3;
-  phraseNote = '';
-
-  if (useLocal) {
-    try { rec.processLocally = true; } catch (e) { phraseNote = 'processLocally 設定不可'; }
-  }
-  if (usePhrases) {
-    const p = buildPhrases(target);
-    if (p) { try { rec.phrases = p; } catch (e) { phraseNote = 'phrases 設定不可（' + e.name + '）'; } }
-    else { phraseNote = 'SpeechRecognitionPhrase 未対応'; }
-  }
-
-  let done = false;
-  const finish = (alts, err) => {
-    if (done) return; done = true;
-    clearTimeout(guard);
-    running = false; setBtn('話す', false);
-    record(s, spoken, target, alts, err);
+  S = {
+    sent: s, spoken: mode === 'ok' ? s.ok : s.ng, target: s.ok, mode,
+    t0: performance.now(), speechAt: 0, lastHeardAt: 0,
+    restarts: 0, finals: [], interim: '', lastError: '',
+    userStopped: false, silenceDone: false, done: false, rec: null,
+    ticker: null, silenceTimer: null, capTimer: null,
   };
-
-  rec.onresult = e => {
-    const alts = [];
-    for (let i = 0; i < e.results[0].length; i++) alts.push(e.results[0][i].transcript);
-    finish(alts, null);
-  };
-  rec.onerror = e => finish([], e.error);
-  rec.onend = () => finish([], 'no-result');
-  rec.onspeechend = () => { tSpeechEnd = performance.now(); };
-
-  try {
-    t0 = performance.now(); tSpeechEnd = 0;
-    rec.start();
-    running = true; setBtn('聞いています　タップで終了', true);
-    guard = setTimeout(() => { try { rec.abort(); } catch (e) {} finish([], 'timeout-15s'); }, 15000);
-  } catch (e) {
-    finish([], 'start-failed:' + e.name);
-  }
+  S.ticker = setInterval(() => {
+    const sec = Math.floor((performance.now() - S.t0) / 1000);
+    setBtn(S.speechAt ? `聞いています　${sec}秒　タップで終了` : `どうぞ　${sec}秒`, true);
+  }, 250);
+  S.capTimer = setTimeout(() => { S.userStopped = true; try { S.rec && S.rec.stop(); } catch (e) {} }, HARD_CAP);
+  setBtn('どうぞ　0秒', true);
+  $('result').hidden = true;
+  launch();
 }
 
-function stop(){ try { rec && rec.stop(); } catch (e) {} }
+function launch(){
+  const r = new SR();
+  r.lang = 'en-US';
+  r.maxAlternatives = 3;
+  r.continuous = contMode;
+  r.interimResults = contMode;
+  if (useLocal) { try { r.processLocally = true; } catch (e) {} }
+  if (usePhrases && hasPhraseCtor) {
+    try { r.phrases = [new SpeechRecognitionPhrase(S.target, 2.0)]; } catch (e) {}
+  }
+
+  r.onspeechstart = () => { if (!S.speechAt) S.speechAt = performance.now(); };
+  r.onresult = e => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const res = e.results[i];
+      if (res.isFinal) {
+        const alts = [];
+        for (let j = 0; j < res.length; j++) alts.push(res[j].transcript.trim());
+        S.finals.push(alts);
+        S.interim = '';
+      } else {
+        S.interim = res[0].transcript;
+      }
+    }
+    if (!S.speechAt) S.speechAt = performance.now();
+    S.lastHeardAt = performance.now();
+    if (contMode) {
+      clearTimeout(S.silenceTimer);
+      S.silenceTimer = setTimeout(() => { S.silenceDone = true; try { S.rec.stop(); } catch (e) {} }, SILENCE_AFTER_SPEECH);
+    }
+  };
+  r.onerror = e => { S.lastError = e.error; };
+  r.onend = () => {
+    if (S.done) return;
+    const elapsed = performance.now() - S.t0;
+    const heardSomething = S.finals.length > 0;
+
+    // 話し始める前に切れた：待ち時間の上限まで作り直す
+    if (!heardSomething && !S.userStopped && elapsed < waitLimit &&
+        (S.lastError === 'no-speech' || S.lastError === '' )) {
+      S.restarts++; S.lastError = '';
+      setTimeout(launch, 120);
+      return;
+    }
+    // 聞き続けるモード：話し始めたあとに切れたら、黙りきるまで作り直す
+    if (contMode && heardSomething && !S.userStopped && !S.silenceDone &&
+        performance.now() - S.lastHeardAt < SILENCE_AFTER_SPEECH) {
+      S.restarts++; S.lastError = '';
+      setTimeout(launch, 120);
+      return;
+    }
+    finishSession();
+  };
+
+  S.rec = r;
+  try { r.start(); }
+  catch (e) { S.lastError = 'start-failed:' + e.name; finishSession(); }
+}
+
+function finishSession(){
+  if (S.done) return;
+  S.done = true;
+  clearInterval(S.ticker); clearTimeout(S.silenceTimer); clearTimeout(S.capTimer);
+  setBtn('話す', false);
+  // 途中で確定しなかった断片も拾う
+  if (S.interim) S.finals.push([S.interim.trim()]);
+  record();
+}
 
 /* ---------- 判定と記録 ---------- */
 const rows = [];
 
-function record(s, spoken, target, alts, err){
-  const nTarget = normalize(target);
-  const norms = alts.map(normalize);
-  const first = norms[0] === nTarget;
-  const any = norms.includes(nTarget);
-  const matched = first ? 'first' : any ? 'alt' : 'none';
+function record(){
+  const nTarget = normalize(S.target);
 
-  // 期待どおりか：お手本どおり→一致すべき／崩して言った→一致すべきでない
-  const expectMatch = (mode === 'ok');
-  const good = err ? false : (expectMatch ? any : !any);
+  // 候補：断片が1つなら候補1〜3、複数なら各断片の候補1をつないだもの
+  let cands;
+  if (S.finals.length === 1) cands = S.finals[0];
+  else if (S.finals.length > 1) cands = [S.finals.map(f => f[0]).join(' ')];
+  else cands = [];
+  const norms = cands.map(normalize);
 
-  const ms = Math.round(performance.now() - (tSpeechEnd || t0));
-  const totalMs = Math.round(performance.now() - t0);
+  const exact = norms.includes(nTarget);
+  const contains = !exact && norms.some(n => containsTarget(n, nTarget));
+  const best = exact ? norms[norms.indexOf(nTarget)] : (norms[0] || '');
+  const ops = wordDiff(nTarget, best);
 
+  const expectMatch = S.mode === 'ok';
+  const err = cands.length ? '' : (S.lastError || 'no-result');
+  const good = err ? false : (expectMatch ? exact : !exact && !contains);
+
+  const waitMs = S.speechAt ? Math.round(S.speechAt - S.t0) : null;
+  const totalMs = Math.round(performance.now() - S.t0);
+
+  // 画面
   $('result').hidden = false;
-  $('verdict').textContent = err
-    ? 'エラー：' + err
-    : good ? (expectMatch ? '一致した（期待どおり）' : '一致しなかった（期待どおり）')
-           : (expectMatch ? '一致しなかった（要注意）' : '一致してしまった（ヒントが効きすぎ）');
-  $('verdict').className = 'verdict ' + (err ? 'fail' : good ? 'pass' : 'fail');
-  $('heard').innerHTML = alts.length
-    ? alts.map((a, i) => `<span>候補${i + 1}</span> ${escapeHtml(a)}<br><span>正規化 ${escapeHtml(normalize(a))}</span>`).join('<br>')
-    : '<span>聞き取れませんでした</span>';
-  if (phraseNote) $('heard').innerHTML += `<br><span>${escapeHtml(phraseNote)}</span>`;
+  let v;
+  if (err) v = err === 'no-speech' ? '話し始めを検出できませんでした' : 'エラー：' + err;
+  else if (expectMatch) v = exact ? '一致した（期待どおり）' : contains ? '前後の余計な語を除けば一致' : '一致しなかった';
+  else v = (!exact && !contains) ? '一致しなかった（期待どおり）' : '一致してしまった（要注意）';
+  $('verdict').textContent = v;
+  $('verdict').className = 'verdict ' + (err ? 'fail' : good ? 'pass' : contains && expectMatch ? 'wait' : 'fail');
+
+  $('diff').innerHTML = cands.length
+    ? (ops.length ? '違い　' + ops.map(o => `<b>${escapeHtml(o.t === 'sub' ? o.from + '→' + o.to : o.t === 'del' ? o.from + 'が抜け' : o.to + 'が余分')}</b>`).join('、') : '違いなし')
+    : '';
+  $('heard').innerHTML = cands.length
+    ? cands.map((a, i) => `<span>候補${i + 1}</span> ${escapeHtml(a)}`).join('<br>') +
+      (S.finals.length > 1 ? `<br><span>${S.finals.length}つの断片をつないだ結果</span>` : '')
+    : '';
+  $('meta').textContent =
+    `話し始めまで ${waitMs === null ? '—' : (waitMs / 1000).toFixed(1) + '秒'}　／　作り直し ${S.restarts}回　／　全体 ${(totalMs / 1000).toFixed(1)}秒`;
 
   rows.push({
-    time: new Date().toISOString(),
-    id: s.id, mode, spoken, target,
-    local: useLocal, phrases: usePhrases && !phraseNote, boost,
-    heard: alts[0] || '', normalized: norms[0] || '',
-    matched, good, err: err || '', responseMs: ms, totalMs,
-    note: phraseNote,
+    time: new Date().toISOString(), id: S.sent.id, mode: S.mode, spoken: S.spoken, target: S.target,
+    waitLimit, continuous: contMode, local: useLocal, phrases: usePhrases && hasPhraseCtor,
+    restarts: S.restarts, segments: S.finals.length, waitMs: waitMs === null ? '' : waitMs, totalMs,
+    alt1: cands[0] || '', alt2: cands[1] || '', alt3: cands[2] || '',
+    normalized: best, exact, contains, diff: diffText(ops), good, err,
   });
   renderLog();
 }
-
-function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
 
 function renderLog(){
   const tb = $('log'); tb.innerHTML = '';
   for (const r of rows.slice().reverse()) {
     const tr = document.createElement('tr');
-    const cells = [
-      r.id,
-      r.mode === 'ok' ? 'お手本' : '崩し',
-      r.err ? 'エラー' : (r.good ? '期待どおり' : '要注意'),
-      r.heard || '—',
-      r.responseMs,
-    ];
+    const verdict = r.err ? 'エラー' : r.good ? '期待どおり' : (r.mode === 'ok' && r.contains) ? '前後に余分' : '要注意';
+    const cells = [r.id, r.mode === 'ok' ? 'お手本' : '崩し', verdict, r.diff || '—', r.waitMs === '' ? '—' : (r.waitMs / 1000).toFixed(1)];
     cells.forEach((c, i) => {
-      const td = document.createElement('td');
-      td.textContent = c;
-      if (i === 2) td.className = r.err ? 'fail' : (r.good ? 'pass' : 'fail');
+      const td = document.createElement('td'); td.textContent = c;
+      if (i === 2) td.className = r.err ? 'fail' : r.good ? 'pass' : (r.mode === 'ok' && r.contains) ? 'wait' : 'fail';
       tr.append(td);
     });
     tb.append(tr);
   }
-  const ok = rows.filter(r => r.mode === 'ok');
-  const ng = rows.filter(r => r.mode === 'ng');
-  const rate = a => a.length ? Math.round(a.filter(r => r.good).length / a.length * 100) + '%' : '—';
-  $('count').textContent = `お手本 ${rate(ok)}（${ok.length}回）／崩し ${rate(ng)}（${ng.length}回）`;
+  const ok = rows.filter(r => r.mode === 'ok' && !r.err);
+  const ng = rows.filter(r => r.mode === 'ng' && !r.err);
+  const pct = (n, d) => d ? Math.round(n / d * 100) + '%' : '—';
+  $('count').textContent =
+    `お手本 ${pct(ok.filter(r => r.exact).length, ok.length)}（前後許容で ${pct(ok.filter(r => r.exact || r.contains).length, ok.length)}）／崩し ${pct(ng.filter(r => r.good).length, ng.length)}`;
 }
 
 $('btnCsv').addEventListener('click', () => {
   if (!rows.length) return;
-  const head = ['time','id','mode','spoken','target','processLocally','phrases','boost','heard','normalized','matched','good','error','responseMs','totalMs','note'];
+  const head = ['time','id','mode','spoken','target','waitLimit','continuous','processLocally','phrases',
+                'restarts','segments','waitMs','totalMs','alt1','alt2','alt3','normalized','exact','contains','diff','good','error'];
   const esc = v => `"${String(v).replace(/"/g, '""')}"`;
-  const body = rows.map(r => [r.time,r.id,r.mode,r.spoken,r.target,r.local,r.phrases,r.boost,r.heard,r.normalized,r.matched,r.good,r.err,r.responseMs,r.totalMs,r.note].map(esc).join(','));
+  const body = rows.map(r => [r.time,r.id,r.mode,r.spoken,r.target,r.waitLimit,r.continuous,r.local,r.phrases,
+    r.restarts,r.segments,r.waitMs,r.totalMs,r.alt1,r.alt2,r.alt3,r.normalized,r.exact,r.contains,r.diff,r.good,r.err].map(esc).join(','));
   const csv = '\uFEFF' + [head.join(','), ...body].join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  a.download = `stt-test-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'')}.csv`;
+  a.download = `stt-test2-${new Date().toISOString().slice(0,19).replace(/[:T-]/g,'')}.csv`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 });
-
 $('btnClear').addEventListener('click', () => { rows.length = 0; renderLog(); });
 
 /* ---------- ホーム画面に追加できるようにする ---------- */
@@ -495,9 +500,8 @@ $('btnClear').addEventListener('click', () => { rows.length = 0; renderLog(); })
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText('STT', 256, 266);
     const m = {
-      name: '音声認識 実機テスト', short_name: 'STT検証',
-      display: 'standalone', start_url: location.href,
-      scope: location.href.replace(/[^/]*$/, ''),
+      name: '音声認識 実機テスト', short_name: 'STT検証', display: 'standalone',
+      start_url: location.href, scope: location.href.replace(/[^/]*$/, ''),
       background_color: '#1b1a17', theme_color: '#1b1a17',
       icons: [{ src: c.toDataURL('image/png'), sizes: '512x512', type: 'image/png', purpose: 'any' }],
     };
@@ -505,7 +509,7 @@ $('btnClear').addEventListener('click', () => { rows.length = 0; renderLog(); })
     link.rel = 'manifest';
     link.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(m));
     document.head.append(link);
-  } catch (e) { /* 失敗しても本題には影響しない */ }
+  } catch (e) {}
 })();
 
 refreshPrompt();
