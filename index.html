@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>音声認識 実機テスト 2</title>
+<title>音声認識 実機テスト 3</title>
 <style>
   :root{
     color-scheme: light dark;
@@ -86,8 +86,8 @@
 </head>
 <body>
 <main>
-  <h1>音声認識 実機テスト 2</h1>
-  <p class="lede">話し始めを待つ時間の延長と、途中で詰まったときの聞き続けを試します。聞き取った文と正解文の違いを語単位で表示します。</p>
+  <h1>音声認識 実機テスト 3</h1>
+  <p class="lede">文の途中で詰まったときに、続きを待って1つの文としてつなげられるかを試します。</p>
 
   <section>
     <h2>発話して確かめる</h2>
@@ -112,11 +112,13 @@
 
     <span class="lbl">途中で言葉に詰まったとき</span>
     <div class="seg" role="group" aria-label="途中で詰まったとき" id="contSeg">
-      <button data-cont="0" aria-pressed="true">そこで終わる</button>
-      <button data-cont="1" aria-pressed="false">聞き続ける</button>
+      <button data-cont="off" aria-pressed="false">そこで終わる</button>
+      <button data-cont="length" aria-pressed="true">文が短ければ待つ</button>
+      <button data-cont="continuous" aria-pressed="false">連続モード</button>
     </div>
 
-    <button class="primary" id="btnRec" style="margin-top:22px">話す</button>
+    <p class="sayNote" id="contNote" style="margin-top:8px"></p>
+    <button class="primary" id="btnRec" style="margin-top:18px">話す</button>
 
     <div id="result" hidden>
       <p class="verdict" id="verdict"></p>
@@ -152,10 +154,10 @@
   <section>
     <h2>確かめる順番</h2>
     <ol>
-      <li>待ち時間を「8秒」にして、「話す」を押してから5秒ほど黙ってから話す。途中で打ち切られず、再開の音が気にならないかを見る。</li>
-      <li>「聞き続ける」にして、文の途中でわざと2秒止まってから続きを言う。文全体が1つにつながって聞き取られるかを見る。</li>
-      <li>S0004 と S0009 を、L の音を意識して数回ずつ言う。「違い」の欄に何が出るかを見る。</li>
-      <li>できればお子さん本人にも同じことをしてもらう。</li>
+      <li>「文が短ければ待つ」で、S0008 と S0009 を、文の途中で2〜3秒止まってから続きを言う。「断片」が2以上になり、つないだもので一致すれば成功。</li>
+      <li>同じく途中で止まったあと、文の頭から言い直してみる。「最後の断片だけ」で一致するかを見る。</li>
+      <li>「連続モード」でも同じことを試す。「話す」のボタンがいつまでも戻らない場合は、タップして止めてください。4秒で強制的に記録します。</li>
+      <li>最後に「文が短ければ待つ」のまま、詰まらずに言った場合に余計な待ちが発生しないか確かめる。</li>
     </ol>
   </section>
 </main>
@@ -274,8 +276,15 @@ const hasPhraseCtor = typeof window.SpeechRecognitionPhrase !== 'undefined';
 
 /* ---------- 設定 ---------- */
 let mode = 'ok', useLocal = false, usePhrases = false;
-let waitLimit = 8000, contMode = false;
-const SILENCE_AFTER_SPEECH = 2500;   // 聞き続けるモードで、最後の聞き取りからこの時間黙ったら終わる
+let waitLimit = 8000, contMode = 'length';
+const SILENCE_AFTER_SPEECH = 2500;   // 連続モードで、最後の聞き取りからこの時間黙ったら終わる
+const PAUSE_WINDOW = 5000;           // 文が短ければ待つモードで、詰まってから続きを待つ時間
+const CONT_LABEL = { off:'そこで終わる', length:'文が短ければ待つ', continuous:'連続モード' };
+const CONT_NOTE = {
+  off: '認識が切れたところで判定します。',
+  length: `聞き取った語数が正解文より少なければ、最大${PAUSE_WINDOW / 1000}秒まで続きを待ってつなげます。`,
+  continuous: 'ブラウザの連続認識を使います。Android では動きが不安定な場合があります。',
+};
 const HARD_CAP = 30000;
 
 const sel = $('sent');
@@ -294,7 +303,8 @@ sel.addEventListener('change', refreshPrompt);
 $('modeOk').addEventListener('click', e => { mode = 'ok'; press(e.target.parentElement, e.target); refreshPrompt(); });
 $('modeNg').addEventListener('click', e => { mode = 'ng'; press(e.target.parentElement, e.target); refreshPrompt(); });
 $('waitSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; waitLimit = +b.dataset.wait; press($('waitSeg'), b); });
-$('contSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; contMode = b.dataset.cont === '1'; press($('contSeg'), b); });
+$('contSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; contMode = b.dataset.cont; press($('contSeg'), b); $('contNote').textContent = CONT_NOTE[contMode]; });
+$('contNote').textContent = CONT_NOTE[contMode];
 $('tgLocal').addEventListener('click', () => { useLocal = !useLocal; $('tgLocal').setAttribute('aria-pressed', String(useLocal)); });
 $('tgPhrases').addEventListener('click', () => { usePhrases = !usePhrases; $('tgPhrases').setAttribute('aria-pressed', String(usePhrases)); });
 
@@ -307,8 +317,14 @@ let S = null;
 
 function setBtn(text, live){ $('btnRec').textContent = text; $('btnRec').classList.toggle('live', !!live); }
 
+function requestStop(){
+  S.userStopped = true;
+  try { S.rec && S.rec.stop(); } catch (e) {}
+  // stop() のあと onend が来ない端末への備え
+  setTimeout(() => { if (S && !S.done) { S.lastError = S.lastError || 'stuck-after-stop'; finishSession(); } }, 4000);
+}
 $('btnRec').addEventListener('click', () => {
-  if (S && !S.done) { S.userStopped = true; try { S.rec && S.rec.stop(); } catch (e) {} return; }
+  if (S && !S.done) { requestStop(); return; }
   startSession();
 });
 
@@ -325,7 +341,7 @@ function startSession(){
     const sec = Math.floor((performance.now() - S.t0) / 1000);
     setBtn(S.speechAt ? `聞いています　${sec}秒　タップで終了` : `どうぞ　${sec}秒`, true);
   }, 250);
-  S.capTimer = setTimeout(() => { S.userStopped = true; try { S.rec && S.rec.stop(); } catch (e) {} }, HARD_CAP);
+  S.capTimer = setTimeout(requestStop, HARD_CAP);
   setBtn('どうぞ　0秒', true);
   $('result').hidden = true;
   launch();
@@ -335,8 +351,8 @@ function launch(){
   const r = new SR();
   r.lang = 'en-US';
   r.maxAlternatives = 3;
-  r.continuous = contMode;
-  r.interimResults = contMode;
+  r.continuous = contMode === 'continuous';
+  r.interimResults = contMode === 'continuous';
   if (useLocal) { try { r.processLocally = true; } catch (e) {} }
   if (usePhrases && hasPhraseCtor) {
     try { r.phrases = [new SpeechRecognitionPhrase(S.target, 2.0)]; } catch (e) {}
@@ -357,7 +373,7 @@ function launch(){
     }
     if (!S.speechAt) S.speechAt = performance.now();
     S.lastHeardAt = performance.now();
-    if (contMode) {
+    if (contMode === 'continuous') {
       clearTimeout(S.silenceTimer);
       S.silenceTimer = setTimeout(() => { S.silenceDone = true; try { S.rec.stop(); } catch (e) {} }, SILENCE_AFTER_SPEECH);
     }
@@ -375,8 +391,16 @@ function launch(){
       setTimeout(launch, 120);
       return;
     }
-    // 聞き続けるモード：話し始めたあとに切れたら、黙りきるまで作り直す
-    if (contMode && heardSomething && !S.userStopped && !S.silenceDone &&
+    // 文が短ければ待つ：語数が足りないうちは、続きを待って作り直す
+    if (contMode === 'length' && heardSomething && !S.userStopped &&
+        heardWordCount() < targetWordCount() &&
+        performance.now() - S.lastHeardAt < PAUSE_WINDOW) {
+      S.restarts++; S.lastError = '';
+      setTimeout(launch, 120);
+      return;
+    }
+    // 連続モード：話し始めたあとに切れたら、黙りきるまで作り直す
+    if (contMode === 'continuous' && heardSomething && !S.userStopped && !S.silenceDone &&
         performance.now() - S.lastHeardAt < SILENCE_AFTER_SPEECH) {
       S.restarts++; S.lastError = '';
       setTimeout(launch, 120);
@@ -389,6 +413,12 @@ function launch(){
   try { r.start(); }
   catch (e) { S.lastError = 'start-failed:' + e.name; finishSession(); }
 }
+
+function heardWordCount(){
+  const t = normalize(S.finals.map(f => f[0]).join(' '));
+  return t ? t.split(' ').length : 0;
+}
+function targetWordCount(){ return normalize(S.target).split(' ').length; }
 
 function finishSession(){
   if (S.done) return;
@@ -409,7 +439,11 @@ function record(){
   // 候補：断片が1つなら候補1〜3、複数なら各断片の候補1をつないだもの
   let cands;
   if (S.finals.length === 1) cands = S.finals[0];
-  else if (S.finals.length > 1) cands = [S.finals.map(f => f[0]).join(' ')];
+  else if (S.finals.length > 1) {
+    const joined = S.finals.map(f => f[0]).join(' ');
+    const last = S.finals[S.finals.length - 1][0];
+    cands = joined === last ? [joined] : [joined, last];
+  }
   else cands = [];
   const norms = cands.map(normalize);
 
@@ -438,15 +472,18 @@ function record(){
     ? (ops.length ? '違い　' + ops.map(o => `<b>${escapeHtml(o.t === 'sub' ? o.from + '→' + o.to : o.t === 'del' ? o.from + 'が抜け' : o.to + 'が余分')}</b>`).join('、') : '違いなし')
     : '';
   $('heard').innerHTML = cands.length
-    ? cands.map((a, i) => `<span>候補${i + 1}</span> ${escapeHtml(a)}`).join('<br>') +
-      (S.finals.length > 1 ? `<br><span>${S.finals.length}つの断片をつないだ結果</span>` : '')
+    ? cands.map((a, i) => {
+        const lbl = S.finals.length > 1 ? (i === 0 ? `${S.finals.length}つの断片をつないだもの` : '最後の断片だけ') : `候補${i + 1}`;
+        return `<span>${lbl}</span> ${escapeHtml(a)}`;
+      }).join('<br>')
     : '';
   $('meta').textContent =
-    `話し始めまで ${waitMs === null ? '—' : (waitMs / 1000).toFixed(1) + '秒'}　／　作り直し ${S.restarts}回　／　全体 ${(totalMs / 1000).toFixed(1)}秒`;
+    `${CONT_LABEL[contMode]}　／　話し始めまで ${waitMs === null ? '—' : (waitMs / 1000).toFixed(1) + '秒'}　／　作り直し ${S.restarts}回　／　断片 ${S.finals.length}　／　全体 ${(totalMs / 1000).toFixed(1)}秒`;
 
   rows.push({
     time: new Date().toISOString(), id: S.sent.id, mode: S.mode, spoken: S.spoken, target: S.target,
     waitLimit, continuous: contMode, local: useLocal, phrases: usePhrases && hasPhraseCtor,
+    pieces: S.finals.map(f => f[0]).join(' | '),
     restarts: S.restarts, segments: S.finals.length, waitMs: waitMs === null ? '' : waitMs, totalMs,
     alt1: cands[0] || '', alt2: cands[1] || '', alt3: cands[2] || '',
     normalized: best, exact, contains, diff: diffText(ops), good, err,
@@ -477,14 +514,14 @@ function renderLog(){
 $('btnCsv').addEventListener('click', () => {
   if (!rows.length) return;
   const head = ['time','id','mode','spoken','target','waitLimit','continuous','processLocally','phrases',
-                'restarts','segments','waitMs','totalMs','alt1','alt2','alt3','normalized','exact','contains','diff','good','error'];
+                'restarts','segments','pieces','waitMs','totalMs','alt1','alt2','alt3','normalized','exact','contains','diff','good','error'];
   const esc = v => `"${String(v).replace(/"/g, '""')}"`;
   const body = rows.map(r => [r.time,r.id,r.mode,r.spoken,r.target,r.waitLimit,r.continuous,r.local,r.phrases,
-    r.restarts,r.segments,r.waitMs,r.totalMs,r.alt1,r.alt2,r.alt3,r.normalized,r.exact,r.contains,r.diff,r.good,r.err].map(esc).join(','));
+    r.restarts,r.segments,r.pieces,r.waitMs,r.totalMs,r.alt1,r.alt2,r.alt3,r.normalized,r.exact,r.contains,r.diff,r.good,r.err].map(esc).join(','));
   const csv = '\uFEFF' + [head.join(','), ...body].join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  a.download = `stt-test2-${new Date().toISOString().slice(0,19).replace(/[:T-]/g,'')}.csv`;
+  a.download = `stt-test3-${new Date().toISOString().slice(0,19).replace(/[:T-]/g,'')}.csv`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 });
