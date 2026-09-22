@@ -3,3 +3,5 @@ tools/tts_api_key.txt
 # 問題データの元の Excel（アプリは data/ の JSON を使う）
 *.xlsx
 __pycache__/
+# オーディオファイル
+audio/compare/
