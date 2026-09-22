@@ -1,0 +1,1258 @@
+{
+ "sentences": [
+  {
+   "id": "S0001",
+   "en": "I am a soccer fan.",
+   "ja": "私はサッカーファンです。",
+   "textbook": "New Horizon 1",
+   "unit": "Unit 3",
+   "grade": "中1",
+   "difficulty": 1,
+   "grammarIds": [
+    "G001"
+   ]
+  },
+  {
+   "id": "S0002",
+   "en": "I can see you tomorrow morning.",
+   "ja": "明日の午前中（朝）ならお会いすることができます。",
+   "grade": "高1",
+   "difficulty": 2,
+   "grammarIds": [
+    "G003",
+    "G007"
+   ]
+  },
+  {
+   "id": "S0003",
+   "en": "You will be able to swim soon.",
+   "ja": "あなたはすぐに泳げるようになるでしょう。",
+   "grade": "高1",
+   "difficulty": 3,
+   "note": "willとbe able toの併用",
+   "grammarIds": [
+    "G004",
+    "G005"
+   ]
+  },
+  {
+   "id": "S0004",
+   "en": "She could play the violin at five.",
+   "ja": "彼女は5歳でバイオリンが弾けた。",
+   "grade": "高1",
+   "difficulty": 3,
+   "note": "at five は「5歳のとき」",
+   "grammarIds": [
+    "G006",
+    "G007"
+   ]
+  },
+  {
+   "id": "S0005",
+   "en": "You can enter if you have a ticket.",
+   "ja": "チケットがあれば、入場できます。",
+   "grade": "高1",
+   "difficulty": 3,
+   "note": "canは許可の意味",
+   "grammarIds": [
+    "G008",
+    "G014"
+   ]
+  },
+  {
+   "id": "S0006",
+   "en": "You can't park your car here.",
+   "ja": "ここに駐車してはいけません。",
+   "grade": "高1",
+   "difficulty": 2,
+   "note": "can'tは禁止。不可能ではない",
+   "grammarIds": [
+    "G009"
+   ]
+  },
+  {
+   "id": "S0007",
+   "en": "Can I turn on the radio?",
+   "ja": "ラジオをつけてもいいですか。",
+   "grade": "高1",
+   "difficulty": 2,
+   "note": "Can I 〜? は自分がしてよいか尋ねる。別の言い方：Can I turn the radio on?",
+   "grammarIds": [
+    "G010"
+   ]
+  },
+  {
+   "id": "S0008",
+   "en": "Can you open the window?",
+   "ja": "窓を開けてくれませんか？",
+   "grade": "高1",
+   "difficulty": 2,
+   "note": "Can you 〜? は相手への依頼。S0007と対比",
+   "grammarIds": [
+    "G011"
+   ]
+  },
+  {
+   "id": "S0009",
+   "en": "Could you lend me the book?",
+   "ja": "その本を貸してもらえますか？",
+   "grade": "高1",
+   "difficulty": 3,
+   "note": "lendは「貸す」。borrowと混同しやすい。別の言い方：Could you lend the book to me?",
+   "grammarIds": [
+    "G012",
+    "G015"
+   ]
+  },
+  {
+   "id": "S0010",
+   "en": "May I use your bathroom?",
+   "ja": "トイレをお借りしてもよろしいですか。",
+   "grade": "高1",
+   "difficulty": 2,
+   "note": "May I 〜? はCan I 〜? より丁寧",
+   "grammarIds": [
+    "G013"
+   ]
+  }
+ ],
+ "sentenceWords": [
+  {
+   "sid": "S0001",
+   "wid": "W0001",
+   "order": 1
+  },
+  {
+   "sid": "S0001",
+   "wid": "W0002",
+   "order": 2
+  },
+  {
+   "sid": "S0002",
+   "wid": "W0003",
+   "order": 1
+  },
+  {
+   "sid": "S0002",
+   "wid": "W0004",
+   "order": 2
+  },
+  {
+   "sid": "S0003",
+   "wid": "W0005",
+   "order": 1
+  },
+  {
+   "sid": "S0003",
+   "wid": "W0006",
+   "order": 2
+  },
+  {
+   "sid": "S0003",
+   "wid": "W0007",
+   "order": 3
+  },
+  {
+   "sid": "S0004",
+   "wid": "W0008",
+   "order": 1
+  },
+  {
+   "sid": "S0005",
+   "wid": "W0009",
+   "order": 1
+  },
+  {
+   "sid": "S0005",
+   "wid": "W0010",
+   "order": 2
+  },
+  {
+   "sid": "S0006",
+   "wid": "W0011",
+   "order": 1
+  },
+  {
+   "sid": "S0007",
+   "wid": "W0012",
+   "order": 1
+  },
+  {
+   "sid": "S0008",
+   "wid": "W0013",
+   "order": 1
+  },
+  {
+   "sid": "S0009",
+   "wid": "W0014",
+   "order": 1
+  },
+  {
+   "sid": "S0010",
+   "wid": "W0015",
+   "order": 1
+  }
+ ],
+ "structure": [
+  {
+   "sid": "S0001",
+   "no": 1,
+   "word": "I",
+   "label": "主語",
+   "order": 1
+  },
+  {
+   "sid": "S0001",
+   "no": 2,
+   "word": "am",
+   "label": "動詞",
+   "order": 2
+  },
+  {
+   "sid": "S0001",
+   "no": 3,
+   "word": "a",
+   "note": "色分け対象外"
+  },
+  {
+   "sid": "S0001",
+   "no": 4,
+   "word": "soccer",
+   "note": "色分け対象外"
+  },
+  {
+   "sid": "S0001",
+   "no": 5,
+   "word": "fan",
+   "label": "補語",
+   "order": 3
+  },
+  {
+   "sid": "S0002",
+   "no": 1,
+   "word": "I",
+   "label": "主語",
+   "order": 1
+  },
+  {
+   "sid": "S0002",
+   "no": 2,
+   "word": "can",
+   "label": "助動詞",
+   "order": 2
+  },
+  {
+   "sid": "S0002",
+   "no": 3,
+   "word": "see",
+   "label": "動詞",
+   "order": 3
+  },
+  {
+   "sid": "S0002",
+   "no": 4,
+   "word": "you",
+   "label": "目的語",
+   "order": 4
+  },
+  {
+   "sid": "S0002",
+   "no": 5,
+   "word": "tomorrow",
+   "note": "修飾語（色分け対象外）"
+  },
+  {
+   "sid": "S0002",
+   "no": 6,
+   "word": "morning",
+   "note": "修飾語（色分け対象外）"
+  },
+  {
+   "sid": "S0003",
+   "no": 1,
+   "word": "You",
+   "label": "主語",
+   "order": 1
+  },
+  {
+   "sid": "S0003",
+   "no": 2,
+   "word": "will",
+   "label": "助動詞",
+   "order": 2
+  },
+  {
+   "sid": "S0003",
+   "no": 3,
+   "word": "be",
+   "label": "動詞",
+   "order": 3,
+   "note": "be able to で1つの意味だが、骨格としてはbeが動詞"
+  },
+  {
+   "sid": "S0003",
+   "no": 4,
+   "word": "able",
+   "label": "補語",
+   "order": 4
+  },
+  {
+   "sid": "S0003",
+   "no": 5,
+   "word": "to",
+   "note": "色分け対象外"
+  },
+  {
+   "sid": "S0003",
+   "no": 6,
+   "word": "swim",
+   "note": "色分け対象外"
+  },
+  {
+   "sid": "S0003",
+   "no": 7,
+   "word": "soon",
+   "note": "修飾語（色分け対象外）"
+  },
+  {
+   "sid": "S0004",
+   "no": 1,
+   "word": "She",
+   "label": "主語",
+   "order": 1
+  },
+  {
+   "sid": "S0004",
+   "no": 2,
+   "word": "could",
+   "label": "助動詞",
+   "order": 2
+  },
+  {
+   "sid": "S0004",
+   "no": 3,
+   "word": "play",
+   "label": "動詞",
+   "order": 3
+  },
+  {
+   "sid": "S0004",
+   "no": 4,
+   "word": "the",
+   "note": "色分け対象外"
+  },
+  {
+   "sid": "S0004",
+   "no": 5,
+   "word": "violin",
+   "label": "目的語",
+   "order": 4
+  },
+  {
+   "sid": "S0004",
+   "no": 6,
+   "word": "at",
+   "note": "修飾語（色分け対象外）"
+  },
+  {
+   "sid": "S0004",
+   "no": 7,
+   "word": "five",
+   "note": "修飾語（色分け対象外）"
+  },
+  {
+   "sid": "S0005",
+   "no": 1,
+   "word": "You",
+   "label": "主語",
+   "order": 1
+  },
+  {
+   "sid": "S0005",
+   "no": 2,
+   "word": "can",
+   "label": "助動詞",
+   "order": 2
+  },
+  {
+   "sid": "S0005",
+   "no": 3,
+   "word": "enter",
+   "label": "動詞",
+   "order": 3
+  },
+  {
+   "sid": "S0005",
+   "no": 4,
+   "word": "if",
+   "note": "従属節を導く接続詞（色分け対象外）"
+  },
+  {
+   "sid": "S0005",
+   "no": 5,
+   "word": "you",
+   "note": "従属節内のため色分け対象外"
+  },
+  {
+   "sid": "S0005",
+   "no": 6,
+   "word": "have",
+   "note": "従属節内のため色分け対象外"
+  },
+  {
+   "sid": "S0005",
+   "no": 7,
+   "word": "a",
+   "note": "従属節内のため色分け対象外"
+  },
+  {
+   "sid": "S0005",
+   "no": 8,
+   "word": "ticket",
+   "note": "従属節内のため色分け対象外"
+  },
+  {
+   "sid": "S0006",
+   "no": 1,
+   "word": "You",
+   "label": "主語",
+   "order": 1
+  },
+  {
+   "sid": "S0006",
+   "no": 2,
+   "word": "can't",
+   "label": "助動詞",
+   "order": 2
+  },
+  {
+   "sid": "S0006",
+   "no": 3,
+   "word": "park",
+   "label": "動詞",
+   "order": 3
+  },
+  {
+   "sid": "S0006",
+   "no": 4,
+   "word": "your",
+   "note": "色分け対象外"
+  },
+  {
+   "sid": "S0006",
+   "no": 5,
+   "word": "car",
+   "label": "目的語",
+   "order": 4
+  },
+  {
+   "sid": "S0006",
+   "no": 6,
+   "word": "here",
+   "note": "修飾語（色分け対象外）"
+  },
+  {
+   "sid": "S0007",
+   "no": 1,
+   "word": "Can",
+   "label": "助動詞",
+   "order": 2
+  },
+  {
+   "sid": "S0007",
+   "no": 2,
+   "word": "I",
+   "label": "主語",
+   "order": 1
+  },
+  {
+   "sid": "S0007",
+   "no": 3,
+   "word": "turn",
+   "label": "動詞",
+   "order": 3,
+   "note": "turn on で1つの動詞のはたらき"
+  },
+  {
+   "sid": "S0007",
+   "no": 4,
+   "word": "on",
+   "note": "turnと一体（色分け対象外）"
+  },
+  {
+   "sid": "S0007",
+   "no": 5,
+   "word": "the",
+   "note": "色分け対象外"
+  },
+  {
+   "sid": "S0007",
+   "no": 6,
+   "word": "radio",
+   "label": "目的語",
+   "order": 4
+  },
+  {
+   "sid": "S0008",
+   "no": 1,
+   "word": "Can",
+   "label": "助動詞",
+   "order": 2
+  },
+  {
+   "sid": "S0008",
+   "no": 2,
+   "word": "you",
+   "label": "主語",
+   "order": 1
+  },
+  {
+   "sid": "S0008",
+   "no": 3,
+   "word": "open",
+   "label": "動詞",
+   "order": 3
+  },
+  {
+   "sid": "S0008",
+   "no": 4,
+   "word": "the",
+   "note": "色分け対象外"
+  },
+  {
+   "sid": "S0008",
+   "no": 5,
+   "word": "window",
+   "label": "目的語",
+   "order": 4
+  },
+  {
+   "sid": "S0009",
+   "no": 1,
+   "word": "Could",
+   "label": "助動詞",
+   "order": 2
+  },
+  {
+   "sid": "S0009",
+   "no": 2,
+   "word": "you",
+   "label": "主語",
+   "order": 1
+  },
+  {
+   "sid": "S0009",
+   "no": 3,
+   "word": "lend",
+   "label": "動詞",
+   "order": 3
+  },
+  {
+   "sid": "S0009",
+   "no": 4,
+   "word": "me",
+   "label": "間接目的語",
+   "order": 4,
+   "note": "第4文型（SVOO）の1つめの目的語"
+  },
+  {
+   "sid": "S0009",
+   "no": 5,
+   "word": "the",
+   "note": "色分け対象外"
+  },
+  {
+   "sid": "S0009",
+   "no": 6,
+   "word": "book",
+   "label": "目的語",
+   "order": 5,
+   "note": "第4文型（SVOO）の2つめの目的語"
+  },
+  {
+   "sid": "S0010",
+   "no": 1,
+   "word": "May",
+   "label": "助動詞",
+   "order": 2
+  },
+  {
+   "sid": "S0010",
+   "no": 2,
+   "word": "I",
+   "label": "主語",
+   "order": 1
+  },
+  {
+   "sid": "S0010",
+   "no": 3,
+   "word": "use",
+   "label": "動詞",
+   "order": 3
+  },
+  {
+   "sid": "S0010",
+   "no": 4,
+   "word": "your",
+   "note": "色分け対象外"
+  },
+  {
+   "sid": "S0010",
+   "no": 5,
+   "word": "bathroom",
+   "label": "目的語",
+   "order": 4
+  }
+ ],
+ "structureChoice": [
+  {
+   "sid": "S0001",
+   "correct": "私はサッカーファンです。",
+   "wrong1": "私はサッカーの扇風機です。",
+   "intent1": "fanを多義語の別の意味で誤読",
+   "wrong2": "サッカーファンは私です。",
+   "intent2": "補語を主語と取り違え",
+   "wrong3": "私はサッカーのファンでした。",
+   "intent3": "時制の誤読"
+  },
+  {
+   "sid": "S0002",
+   "correct": "明日の午前中（朝）ならお会いすることができます。",
+   "wrong1": "明日の午前中、あなたは私に会うことができます。",
+   "intent1": "主語と目的語を取り違え",
+   "wrong2": "私は明日の朝、あなたに会うつもりです。",
+   "intent2": "canをwillと誤読（可能→意志）",
+   "wrong3": "私は明日の朝、あなたに会えるかもしれません。",
+   "intent3": "canを可能性のmayと誤読"
+  },
+  {
+   "sid": "S0003",
+   "correct": "あなたはすぐに泳げるようになるでしょう。",
+   "wrong1": "あなたはすぐに泳がなければならないでしょう。",
+   "intent1": "be able toをbe going toやhave toと誤読",
+   "wrong2": "あなたはすぐに泳ぐつもりです。",
+   "intent2": "be able to（可能）を意志と誤読",
+   "wrong3": "あなたはもう泳げるようになっています。",
+   "intent3": "willの未来を無視して現在完了と誤読"
+  },
+  {
+   "sid": "S0004",
+   "correct": "彼女は5歳でバイオリンが弾けた。",
+   "wrong1": "彼女は5歳でバイオリンを弾かなければならなかった。",
+   "intent1": "could（過去の能力）をhad to（過去の義務）と誤読",
+   "wrong2": "彼女は5歳でバイオリンを弾けるかもしれない。",
+   "intent2": "couldを過去の能力ではなく推量と誤読",
+   "wrong3": "彼女は5人でバイオリンを弾くことができた。",
+   "intent3": "at five を人数と誤読"
+  },
+  {
+   "sid": "S0005",
+   "correct": "チケットがあれば、入場できます。",
+   "wrong1": "チケットを持っていれば、あなたは入らなければなりません。",
+   "intent1": "can（許可）をmust（義務）と誤読",
+   "wrong2": "あなたが入れば、チケットをもらえます。",
+   "intent2": "主節と従属節を取り違え",
+   "wrong3": "チケットがあっても、入場できません。",
+   "intent3": "ifを譲歩（〜だとしても）と誤読"
+  },
+  {
+   "sid": "S0006",
+   "correct": "ここに駐車してはいけません。",
+   "wrong1": "あなたはここに車を駐車する能力がありません。",
+   "intent1": "can't（禁止）を能力の否定と誤読",
+   "wrong2": "ここにはあなたの車を停める公園がありません。",
+   "intent2": "parkを名詞「公園」と誤読",
+   "wrong3": "ここに車を駐車しなくてもよい。",
+   "intent3": "can'tをdon't have to（不必要）と誤読"
+  },
+  {
+   "sid": "S0007",
+   "correct": "ラジオをつけてもいいですか。",
+   "wrong1": "ラジオをつけてくれませんか。",
+   "intent1": "Can I 〜? をCan you 〜?（依頼）と誤読",
+   "wrong2": "ラジオを消してもいいですか。",
+   "intent2": "turn onをturn off（消す）と誤読",
+   "wrong3": "私はラジオをつけることができますか。",
+   "intent3": "許可ではなく能力の可否と誤読"
+  },
+  {
+   "sid": "S0008",
+   "correct": "窓を開けてくれませんか？",
+   "wrong1": "窓を開けてもいいですか。",
+   "intent1": "Can you 〜? をCan I 〜?（許可）と誤読",
+   "wrong2": "あなたは窓を開けることができますか。",
+   "intent2": "依頼ではなく能力の可否と誤読",
+   "wrong3": "その窓は開きますか。",
+   "intent3": "youを無視し、自動詞として誤読"
+  },
+  {
+   "sid": "S0009",
+   "correct": "その本を貸してもらえますか？",
+   "wrong1": "その本を借りてもらえますか？",
+   "intent1": "lend（貸す）をborrow（借りる）と誤読",
+   "wrong2": "あなたは私にその本を貸すことができましたか。",
+   "intent2": "could（丁寧）を過去の能力と誤読",
+   "wrong3": "私からその本を借りてもらえますか？",
+   "intent3": "SVOOの受け渡しの向きを逆に誤読"
+  },
+  {
+   "sid": "S0010",
+   "correct": "トイレをお借りしてもよろしいですか。",
+   "wrong1": "私はあなたのトイレを使うかもしれません。",
+   "intent1": "may（許可）を推量「かもしれない」と誤読",
+   "wrong2": "私のトイレを使ってもよろしいですか。",
+   "intent2": "your（あなたの）をmy（私の）と誤読",
+   "wrong3": "あなたは私のトイレを使ってくれませんか。",
+   "intent3": "May I 〜? を相手への依頼と誤読"
+  }
+ ],
+ "cloze": [
+  {
+   "sid": "S0001",
+   "blankNo": 2,
+   "answer": "am",
+   "dummy1": "is",
+   "dummy2": "are",
+   "dummy3": "be",
+   "intent": "be動詞の人称変化(主語I)",
+   "errorType": "be動詞の人称・時制違い"
+  },
+  {
+   "sid": "S0002",
+   "blankNo": 2,
+   "answer": "can",
+   "dummy1": "must",
+   "dummy2": "may",
+   "dummy3": "won't",
+   "intent": "「〜できる」を表す助動詞。義務・推量・否定と区別する",
+   "errorType": "助動詞の意味の取り違え",
+   "note": "日本語訳があるため意味で判別できる"
+  },
+  {
+   "sid": "S0003",
+   "blankNo": 3,
+   "answer": "be",
+   "dummy1": "are",
+   "dummy2": "being",
+   "dummy3": "been",
+   "intent": "助動詞willの後ろは動詞の原形",
+   "errorType": "動詞の活用形違い",
+   "note": "will＋原形。canとwillは重ねられない点も押さえる"
+  },
+  {
+   "sid": "S0004",
+   "blankNo": 2,
+   "answer": "could",
+   "dummy1": "can",
+   "dummy2": "will",
+   "dummy3": "should",
+   "intent": "過去の能力を表すcould。現在・未来・助言と区別する",
+   "errorType": "時制の取り違え／助動詞の意味の取り違え"
+  },
+  {
+   "sid": "S0005",
+   "blankNo": 4,
+   "answer": "if",
+   "dummy1": "so",
+   "dummy2": "but",
+   "dummy3": "because",
+   "intent": "条件を表す接続詞if。順接・逆接・理由と区別する",
+   "errorType": "接続詞の取り違え",
+   "note": "日本語訳の「〜があれば」から条件と判断する"
+  },
+  {
+   "sid": "S0006",
+   "blankNo": 2,
+   "answer": "can't",
+   "dummy1": "don't have to",
+   "dummy2": "may",
+   "dummy3": "should",
+   "intent": "禁止を表すcan't。不必要・許可・助言と区別する",
+   "errorType": "助動詞の意味の取り違え",
+   "note": "「〜してはいけない」＝禁止。「〜しなくてよい」ではない"
+  },
+  {
+   "sid": "S0007",
+   "blankNo": 2,
+   "answer": "I",
+   "dummy1": "you",
+   "dummy2": "we",
+   "dummy3": "he",
+   "intent": "Can I 〜? は自分がしてよいか尋ねる（許可）",
+   "errorType": "許可と依頼の取り違え",
+   "note": "Can you 〜? だと「〜してくれませんか」（依頼）になる"
+  },
+  {
+   "sid": "S0008",
+   "blankNo": 2,
+   "answer": "you",
+   "dummy1": "I",
+   "dummy2": "we",
+   "dummy3": "she",
+   "intent": "Can you 〜? は相手への依頼",
+   "errorType": "許可と依頼の取り違え",
+   "note": "Can I 〜? だと「〜してもいいですか」（許可）になる"
+  },
+  {
+   "sid": "S0009",
+   "blankNo": 3,
+   "answer": "lend",
+   "dummy1": "borrow",
+   "dummy2": "rent",
+   "dummy3": "return",
+   "intent": "lendは「貸す」。borrow（借りる）と逆",
+   "errorType": "対になる語との取り違え",
+   "note": "「貸してもらえますか」＝相手が貸す側"
+  },
+  {
+   "sid": "S0010",
+   "blankNo": 4,
+   "answer": "your",
+   "dummy1": "my",
+   "dummy2": "his",
+   "dummy3": "their",
+   "intent": "相手のものを借りるので your を使う",
+   "errorType": "代名詞の格／所有格の取り違え",
+   "note": "「お借りする」＝相手のもの"
+  }
+ ],
+ "order": [
+  {
+   "sid": "S0001",
+   "no": 1,
+   "word": "I",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0001",
+   "no": 2,
+   "word": "am",
+   "pos": "be動詞"
+  },
+  {
+   "sid": "S0001",
+   "no": 3,
+   "word": "a",
+   "pos": "冠詞"
+  },
+  {
+   "sid": "S0001",
+   "no": 4,
+   "word": "soccer",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0001",
+   "no": 5,
+   "word": "fan",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0001",
+   "word": "is",
+   "pos": "be動詞",
+   "extra": 1,
+   "note": "不要語（語順番号は空欄）"
+  },
+  {
+   "sid": "S0002",
+   "no": 1,
+   "word": "I",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0002",
+   "no": 2,
+   "word": "can",
+   "pos": "助動詞"
+  },
+  {
+   "sid": "S0002",
+   "no": 3,
+   "word": "see",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0002",
+   "no": 4,
+   "word": "you",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0002",
+   "no": 5,
+   "word": "tomorrow",
+   "pos": "副詞"
+  },
+  {
+   "sid": "S0002",
+   "no": 6,
+   "word": "morning",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0002",
+   "word": "to",
+   "pos": "前置詞",
+   "extra": 1,
+   "note": "不要語：canの後ろにtoを入れる誤りを誘う"
+  },
+  {
+   "sid": "S0003",
+   "no": 1,
+   "word": "You",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0003",
+   "no": 2,
+   "word": "will",
+   "pos": "助動詞"
+  },
+  {
+   "sid": "S0003",
+   "no": 3,
+   "word": "be",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0003",
+   "no": 4,
+   "word": "able",
+   "pos": "形容詞"
+  },
+  {
+   "sid": "S0003",
+   "no": 5,
+   "word": "to",
+   "pos": "不定詞のto"
+  },
+  {
+   "sid": "S0003",
+   "no": 6,
+   "word": "swim",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0003",
+   "no": 7,
+   "word": "soon",
+   "pos": "副詞"
+  },
+  {
+   "sid": "S0003",
+   "word": "can",
+   "pos": "助動詞",
+   "extra": 1,
+   "note": "不要語：willとcanを重ねる誤りを誘う"
+  },
+  {
+   "sid": "S0004",
+   "no": 1,
+   "word": "She",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0004",
+   "no": 2,
+   "word": "could",
+   "pos": "助動詞"
+  },
+  {
+   "sid": "S0004",
+   "no": 3,
+   "word": "play",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0004",
+   "no": 4,
+   "word": "the",
+   "pos": "冠詞"
+  },
+  {
+   "sid": "S0004",
+   "no": 5,
+   "word": "violin",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0004",
+   "no": 6,
+   "word": "at",
+   "pos": "前置詞"
+  },
+  {
+   "sid": "S0004",
+   "no": 7,
+   "word": "five",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0004",
+   "word": "played",
+   "pos": "動詞",
+   "extra": 1,
+   "note": "不要語：could＋過去形とする誤りを誘う"
+  },
+  {
+   "sid": "S0005",
+   "no": 1,
+   "word": "You",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0005",
+   "no": 2,
+   "word": "can",
+   "pos": "助動詞"
+  },
+  {
+   "sid": "S0005",
+   "no": 3,
+   "word": "enter",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0005",
+   "no": 4,
+   "word": "if",
+   "pos": "接続詞"
+  },
+  {
+   "sid": "S0005",
+   "no": 5,
+   "word": "you",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0005",
+   "no": 6,
+   "word": "have",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0005",
+   "no": 7,
+   "word": "a",
+   "pos": "冠詞"
+  },
+  {
+   "sid": "S0005",
+   "no": 8,
+   "word": "ticket",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0005",
+   "word": "has",
+   "pos": "動詞",
+   "extra": 1,
+   "note": "不要語：主語youにhasを使う誤りを誘う"
+  },
+  {
+   "sid": "S0006",
+   "no": 1,
+   "word": "You",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0006",
+   "no": 2,
+   "word": "can't",
+   "pos": "助動詞"
+  },
+  {
+   "sid": "S0006",
+   "no": 3,
+   "word": "park",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0006",
+   "no": 4,
+   "word": "your",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0006",
+   "no": 5,
+   "word": "car",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0006",
+   "no": 6,
+   "word": "here",
+   "pos": "副詞"
+  },
+  {
+   "sid": "S0006",
+   "word": "don't",
+   "pos": "助動詞",
+   "extra": 1,
+   "note": "不要語：否定を重ねる誤りを誘う"
+  },
+  {
+   "sid": "S0007",
+   "no": 1,
+   "word": "Can",
+   "pos": "助動詞"
+  },
+  {
+   "sid": "S0007",
+   "no": 2,
+   "word": "I",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0007",
+   "no": 3,
+   "word": "turn",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0007",
+   "no": 4,
+   "word": "on",
+   "pos": "副詞"
+  },
+  {
+   "sid": "S0007",
+   "no": 5,
+   "word": "the",
+   "pos": "冠詞"
+  },
+  {
+   "sid": "S0007",
+   "no": 6,
+   "word": "radio",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0007",
+   "word": "off",
+   "pos": "副詞",
+   "extra": 1,
+   "note": "不要語：turn onとturn offの取り違えを誘う"
+  },
+  {
+   "sid": "S0008",
+   "no": 1,
+   "word": "Can",
+   "pos": "助動詞"
+  },
+  {
+   "sid": "S0008",
+   "no": 2,
+   "word": "you",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0008",
+   "no": 3,
+   "word": "open",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0008",
+   "no": 4,
+   "word": "the",
+   "pos": "冠詞"
+  },
+  {
+   "sid": "S0008",
+   "no": 5,
+   "word": "window",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0008",
+   "word": "I",
+   "pos": "代名詞",
+   "extra": 1,
+   "note": "不要語：Can I 〜?（許可）との取り違えを誘う"
+  },
+  {
+   "sid": "S0009",
+   "no": 1,
+   "word": "Could",
+   "pos": "助動詞"
+  },
+  {
+   "sid": "S0009",
+   "no": 2,
+   "word": "you",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0009",
+   "no": 3,
+   "word": "lend",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0009",
+   "no": 4,
+   "word": "me",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0009",
+   "no": 5,
+   "word": "the",
+   "pos": "冠詞"
+  },
+  {
+   "sid": "S0009",
+   "no": 6,
+   "word": "book",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0009",
+   "word": "borrow",
+   "pos": "動詞",
+   "extra": 1,
+   "note": "不要語：lend（貸す）とborrow（借りる）の取り違えを誘う"
+  },
+  {
+   "sid": "S0010",
+   "no": 1,
+   "word": "May",
+   "pos": "助動詞"
+  },
+  {
+   "sid": "S0010",
+   "no": 2,
+   "word": "I",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0010",
+   "no": 3,
+   "word": "use",
+   "pos": "動詞"
+  },
+  {
+   "sid": "S0010",
+   "no": 4,
+   "word": "your",
+   "pos": "代名詞"
+  },
+  {
+   "sid": "S0010",
+   "no": 5,
+   "word": "bathroom",
+   "pos": "名詞"
+  },
+  {
+   "sid": "S0010",
+   "word": "my",
+   "pos": "代名詞",
+   "extra": 1,
+   "note": "不要語：your と my の取り違えを誘う"
+  }
+ ],
+ "patterns": []
+}

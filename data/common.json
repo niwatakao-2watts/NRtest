@@ -1,0 +1,356 @@
+{
+ "grammar": [
+  {
+   "id": "G001",
+   "name": "be動詞（現在形）",
+   "grade": "中1",
+   "desc": "am / is / are の使い分け"
+  },
+  {
+   "id": "G002",
+   "name": "一般動詞（現在形）",
+   "grade": "中1",
+   "desc": "三人称単数現在のs"
+  },
+  {
+   "id": "G003",
+   "name": "助動詞 can（可能）",
+   "grade": "中2",
+   "desc": "「〜できる」。能力・可能を表す。後ろは動詞の原形"
+  },
+  {
+   "id": "G004",
+   "name": "be able to（可能）",
+   "grade": "中2",
+   "desc": "canとほぼ同義。助動詞と併用でき、未来形や完了形でも使える"
+  },
+  {
+   "id": "G005",
+   "name": "助動詞 will（未来）",
+   "grade": "中2",
+   "desc": "「〜だろう」。後ろは動詞の原形"
+  },
+  {
+   "id": "G006",
+   "name": "助動詞 could（過去の能力）",
+   "grade": "中2",
+   "desc": "canの過去形。過去の継続的な能力を表す"
+  },
+  {
+   "id": "G007",
+   "name": "時を表す副詞句",
+   "grade": "中1",
+   "desc": "tomorrow morning / at five など、文末に置かれることが多い"
+  },
+  {
+   "id": "G008",
+   "name": "助動詞 can（許可）",
+   "grade": "中2",
+   "desc": "「〜してよい」。許可を表す"
+  },
+  {
+   "id": "G009",
+   "name": "助動詞 can't（禁止）",
+   "grade": "中2",
+   "desc": "「〜してはいけない」。禁止を表す"
+  },
+  {
+   "id": "G010",
+   "name": "Can I 〜?（許可を求める）",
+   "grade": "中2",
+   "desc": "「〜してもいいですか」。自分がする"
+  },
+  {
+   "id": "G011",
+   "name": "Can you 〜?（依頼）",
+   "grade": "中2",
+   "desc": "「〜してくれませんか」。相手にしてもらう"
+  },
+  {
+   "id": "G012",
+   "name": "Could you 〜?（丁寧な依頼）",
+   "grade": "中2",
+   "desc": "Can you 〜? より丁寧"
+  },
+  {
+   "id": "G013",
+   "name": "May I 〜?（丁寧に許可を求める）",
+   "grade": "中2",
+   "desc": "Can I 〜? より丁寧"
+  },
+  {
+   "id": "G014",
+   "name": "接続詞 if（条件）",
+   "grade": "中2",
+   "desc": "「もし〜ならば」。条件を表す副詞節を作る"
+  },
+  {
+   "id": "G015",
+   "name": "第4文型（SVOO）",
+   "grade": "中2",
+   "desc": "「AにBを〜する」。目的語を2つとる"
+  }
+ ],
+ "words": [
+  {
+   "id": "W0001",
+   "word": "soccer",
+   "pos": "名詞",
+   "meaning": "サッカー",
+   "dummy1": "社交、付き合い",
+   "dummy2": "靴下",
+   "dummy3": "採取、収集",
+   "ipa": "ˈsɑːkər",
+   "note": "soccer→ソーシャル/sock/収集 と音で引き寄せる"
+  },
+  {
+   "id": "W0002",
+   "word": "fan",
+   "pos": "名詞",
+   "meaning": "ファン、愛好者",
+   "dummy1": "楽しみ、おもしろさ",
+   "dummy2": "農場",
+   "dummy3": "最終の",
+   "ipa": "fæn",
+   "note": "fan→fun、farm、final と音で引き寄せる（扇風機は同じ名詞の別の語義で、単独提示では誤りにならないため不採用）"
+  },
+  {
+   "id": "W0003",
+   "word": "tomorrow",
+   "pos": "名詞・副詞",
+   "meaning": "明日",
+   "dummy1": "今日",
+   "dummy2": "墓、記念碑",
+   "dummy3": "トマト",
+   "ipa": "təˈmɔːroʊ",
+   "note": "tomorrow→tomb/tomato と音で引き寄せる。今日は基本の対比"
+  },
+  {
+   "id": "W0004",
+   "word": "morning",
+   "pos": "名詞",
+   "meaning": "朝、午前",
+   "dummy1": "喪に服すこと",
+   "dummy2": "警告",
+   "dummy3": "海の",
+   "ipa": "ˈmɔːrnɪŋ",
+   "note": "morning→mourning（同音）、warning、marine と音で引き寄せる"
+  },
+  {
+   "id": "W0005",
+   "word": "able",
+   "pos": "形容詞",
+   "meaning": "できる",
+   "dummy1": "テーブル、表",
+   "dummy2": "安定した",
+   "dummy3": "利用できる",
+   "ipa": "ˈeɪbl",
+   "note": "able→table、stable、available と語尾の音で引き寄せる"
+  },
+  {
+   "id": "W0006",
+   "word": "swim",
+   "pos": "動詞",
+   "meaning": "泳ぐ",
+   "dummy1": "ほっそりした",
+   "dummy2": "くるくる回る",
+   "dummy3": "沈む",
+   "ipa": "swɪm",
+   "note": "swim→slim、spin、sink と音で引き寄せる"
+  },
+  {
+   "id": "W0007",
+   "word": "soon",
+   "pos": "副詞",
+   "meaning": "まもなく、すぐに",
+   "dummy1": "スプーン",
+   "dummy2": "気分、機嫌",
+   "dummy3": "部屋",
+   "ipa": "suːn",
+   "note": "soon→spoon、mood、room と音で引き寄せる"
+  },
+  {
+   "id": "W0008",
+   "word": "violin",
+   "pos": "名詞",
+   "meaning": "バイオリン",
+   "dummy1": "ビタミン",
+   "dummy2": "生物工学、バイオ技術",
+   "dummy3": "暴力",
+   "ipa": "ˌvaɪəˈlɪn",
+   "note": "violin→ビタミン/バイオ/violence と音で引き寄せる。楽器名を並べるとカテゴリが露見して易しくなる"
+  },
+  {
+   "id": "W0009",
+   "word": "enter",
+   "pos": "動詞",
+   "meaning": "入る",
+   "dummy1": "中央、中心",
+   "dummy2": "興味を持たせる",
+   "dummy3": "終わり、最後",
+   "ipa": "ˈentər",
+   "note": "enter→center、interest、end と音で引き寄せる"
+  },
+  {
+   "id": "W0010",
+   "word": "ticket",
+   "pos": "名詞",
+   "meaning": "切符、チケット",
+   "dummy1": "台所",
+   "dummy2": "厚い",
+   "dummy3": "ニワトリ",
+   "ipa": "ˈtɪkɪt",
+   "note": "ticket→kitchen、thick、chicken と音で引き寄せる"
+  },
+  {
+   "id": "W0011",
+   "word": "park",
+   "pos": "動詞",
+   "meaning": "駐車する",
+   "dummy1": "公園",
+   "dummy2": "部品、一部",
+   "dummy3": "小包",
+   "ipa": "pɑːrk",
+   "note": "park→公園（名詞の語義）、part、parcel と音で引き寄せる。品詞（動詞）を併記して出題する前提"
+  },
+  {
+   "id": "W0012",
+   "word": "radio",
+   "pos": "名詞",
+   "meaning": "ラジオ",
+   "dummy1": "半径、範囲",
+   "dummy2": "比率、割合",
+   "dummy3": "急進的な",
+   "ipa": "ˈreɪdioʊ",
+   "note": "radio→radius、ratio、radical と音で引き寄せる"
+  },
+  {
+   "id": "W0013",
+   "word": "window",
+   "pos": "名詞",
+   "meaning": "窓",
+   "dummy1": "風",
+   "dummy2": "勝者",
+   "dummy3": "冬",
+   "ipa": "ˈwɪndoʊ",
+   "note": "window→wind、winner、winter と音で引き寄せる"
+  },
+  {
+   "id": "W0014",
+   "word": "lend",
+   "pos": "動詞",
+   "meaning": "貸す",
+   "dummy1": "借りる",
+   "dummy2": "終わり、最後",
+   "dummy3": "土地",
+   "ipa": "lend",
+   "note": "lend→borrow（対義・最重要）、end、land と音で引き寄せる"
+  },
+  {
+   "id": "W0015",
+   "word": "bathroom",
+   "pos": "名詞",
+   "meaning": "トイレ、洗面所",
+   "dummy1": "ほうき",
+   "dummy2": "呼吸",
+   "dummy3": "風呂に入ること",
+   "ipa": "ˈbæθruːm",
+   "note": "bathroom→broom、breath、bathing と音で引き寄せる（浴室はbathroomの正しい語義のため不採用）"
+  }
+ ],
+ "irregularVerbs": [
+  {
+   "id": "V0001",
+   "base": "go",
+   "past": "went",
+   "pp": "gone",
+   "meaning": "行く",
+   "type": "A-B-C"
+  },
+  {
+   "id": "V0002",
+   "base": "cut",
+   "past": "cut",
+   "pp": "cut",
+   "meaning": "切る",
+   "type": "A-A-A"
+  }
+ ],
+ "idioms": [
+  {
+   "id": "P0001",
+   "idiom": "look for",
+   "meaning": "〜を探す",
+   "exEn": "I am looking for my key.",
+   "exJa": "私は鍵を探しています。",
+   "dummy1": "〜を見る",
+   "dummy2": "〜の世話をする",
+   "dummy3": "〜を楽しみに待つ",
+   "note": "他のlook熟語をダミーに使用"
+  },
+  {
+   "id": "P0002",
+   "idiom": "turn on",
+   "meaning": "（スイッチを）つける",
+   "exEn": "Can I turn on the radio?",
+   "exJa": "ラジオをつけてもいいですか。",
+   "dummy1": "（スイッチを）消す",
+   "dummy2": "〜を提出する",
+   "dummy3": "〜に頼る",
+   "sid": "S0007",
+   "note": "目的語が代名詞の場合は turn it on の語順になる"
+  }
+ ],
+ "numbers": [
+  {
+   "id": "N0001",
+   "category": "基数",
+   "written": "12",
+   "english": "twelve"
+  },
+  {
+   "id": "N0002",
+   "category": "序数",
+   "written": "12th",
+   "english": "twelfth",
+   "readingNote": "twelveではない"
+  },
+  {
+   "id": "N0003",
+   "category": "年号",
+   "written": "1998",
+   "english": "nineteen ninety-eight",
+   "readingNote": "2桁ずつ読む"
+  },
+  {
+   "id": "N0004",
+   "category": "時刻",
+   "written": "7:15",
+   "english": "seven fifteen",
+   "readingNote": "a quarter past seven とも言う"
+  }
+ ],
+ "mishear": [
+  {
+   "correct": "lend",
+   "heard": "rent",
+   "type": "L / R",
+   "status": "実機テストで確認（2026-09-21）",
+   "note": "S0009。5回中4回"
+  },
+  {
+   "correct": "play",
+   "heard": "pray",
+   "type": "L / R",
+   "status": "実機テストで確認（2026-09-21）",
+   "note": "S0004。複数回"
+  },
+  {
+   "correct": "she",
+   "heard": "see",
+   "type": "SH / S",
+   "status": "実機テストで確認（2026-09-21）",
+   "note": "S0004"
+  }
+ ]
+}

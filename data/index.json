@@ -1,0 +1,18 @@
+{
+ "generatedAt": "2026-09-21T15:57:02",
+ "packs": [
+  {
+   "file": "pack_0001.json",
+   "range": [
+    "S0001",
+    "S0050"
+   ],
+   "sentences": 10,
+   "version": "098a1bb1032a"
+  }
+ ],
+ "common": {
+  "file": "common.json",
+  "version": "bdbd610829a1"
+ }
+}
