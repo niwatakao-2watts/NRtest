@@ -4,4 +4,4 @@ tools/tts_api_key.txt
 *.xlsx
 __pycache__/
 # オーディオファイル
-audio/compare/
+audio/
