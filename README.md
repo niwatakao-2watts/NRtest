@@ -54,7 +54,7 @@ py tools/generate_audio.py 問題データ作成フォーマット_10文試作�
 マイクを使うため、HTTPS で配信する必要があります。GitHub Pages にこのフォルダを置き、Android の Chrome で開いてください。
 
 - `tools/tts_api_key.txt` は `.gitignore` で除外してあります。リポジトリに入らないことを必ず確認してください
-- 公開リポジトリの GitHub Pages は誰でも見られます。教科書の例文と音声を置くことになるため、500文に広げる前に配信方法を決めます（まとめ 15-11）
+- 公開リポジトリの GitHub Pages は誰でも見られます。教科書の例文と音声を守るため、500文に広げる前に Cloudflare Pages ＋ Cloudflare Access（登録した人だけが開ける方法）へ移します（まとめ 8-6）
 
 ## 試してほしいこと
 
