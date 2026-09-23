@@ -99,10 +99,11 @@ export function runSpeak(root, ctx) {
       const r = await L.start();
       st.listening = null;
       if (r.error) {
-        ctx.log({ type: 's1', attempt: st.attempts + 1, error: r.error, readyMs: r.readyMs, waitMs: r.waitMs, restarts: r.restarts });
+        ctx.log({ type: 's1', attempt: st.attempts + 1, error: r.error, readyMs: r.readyMs, waitMs: r.waitMs,
+                  restarts: r.restarts, retrySilence: r.retrySilence, retryMore: r.retryMore, shortStops: r.shortStops });
         if (isFatal(r.error)) { st.self = true; st.note = errorMessage(r.error); }
         // 声がなかった場合は回数に数えない。話し始めが早すぎると頭の語が届かないため、その案内を添える
-        else st.note = errorMessage(r.error) + '（🎤を押したあと、「どうぞ」が出てから話してください）';
+        else st.note = errorMessage(r.error) + 'もう一度🎤を押して、「どうぞ」が出てから話してください。';
         return stage1();
       }
       st.attempts++;
@@ -110,7 +111,8 @@ export function runSpeak(root, ctx) {
       st.last = j;
       ctx.log({ type: 's1', attempt: st.attempts, match: j.match, heard: j.heard, pieces: r.pieces,
                 cands: r.cands, ops: j.ops.map(diffLabel), readyMs: r.readyMs, waitMs: r.waitMs,
-                restarts: r.restarts, totalMs: r.totalMs });
+                restarts: r.restarts, retrySilence: r.retrySilence, retryMore: r.retryMore,
+                shortStops: r.shortStops, totalMs: r.totalMs });
       if (st.attempts === 1) st.first = j.match === 'exact' ? 'ok' : j.match === 'yure' ? 'ok_yure' : null;
       if (j.match !== 'none') {
         st.solved = true;
@@ -182,7 +184,8 @@ export function runSpeak(root, ctx) {
         if (st.check.match === 'exact') chime(settings);
       }
       ctx.log({ type: 's2', check: st.checks, match: st.check.match, heard: st.check.heard, error: st.check.error,
-                ops: (st.check.ops || []).map(diffLabel), readyMs: r.readyMs, waitMs: r.waitMs, restarts: r.restarts });
+                ops: (st.check.ops || []).map(diffLabel), readyMs: r.readyMs, waitMs: r.waitMs,
+                restarts: r.restarts, retrySilence: r.retrySilence, retryMore: r.retryMore, shortStops: r.shortStops });
       stage2(false);
     };
 
