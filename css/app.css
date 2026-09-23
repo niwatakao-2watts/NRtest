@@ -71,6 +71,8 @@ button:focus-visible { outline: 2px solid var(--strong); outline-offset: 3px; }
 .btn.mic svg { width: 26px; height: 26px; fill: currentColor; }
 .btn.mic .stroke { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .btn.mic.live { background: var(--card); color: var(--strong); outline: 2px solid var(--strong); animation: breathe 1.6s ease-in-out infinite; }
+/* 準備中：まだ話さない。開いたら .live に変わる（8-4） */
+.btn.mic.preparing { background: var(--card); color: var(--muted); outline: 2px dashed var(--line); }
 @keyframes breathe { 50% { outline-color: var(--line); } }
 @media (prefers-reduced-motion: reduce) { .btn.mic.live { animation: none; } }
 .pair { display: flex; gap: 10px; }

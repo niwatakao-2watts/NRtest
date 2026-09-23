@@ -7,7 +7,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const shuffle = a => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const NEXT_MS = 260;              // 誤答のあとなど、軽い間（13-8：0.2秒程度）
-const SHOW_MS = 1300;             // 正解を見せてから次へ進むまで（正解の内容を印象づけるため）
+const SHOW_MS = 1200;             // 正解を見せてから次へ進むまで（正解の内容を印象づけるため）
 
 /** 誤答の知らせ方（13-5：音は鳴らさない。13-10：振動は短く2回） */
 function buzz(settings) {

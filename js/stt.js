@@ -11,20 +11,23 @@ const RESTART_GAP = 400;      // やり直しの間隔。短いと端末の開�
 const RESTART_MAX = 3;        // やり直しの回数の上限（音が何度も鳴るのを防ぐ）
 
 export class Listener {
-  constructor({ target, waitLimit = 8000, pauseWindow = 5000, hardCap = 30000, onState = () => {} }) {
+  constructor({ target, waitLimit = 8000, pauseWindow = 5000, hardCap = 30000,
+                onState = () => {}, onReady = () => {} }) {
     this.targetWords = wordCount(target);
-    Object.assign(this, { waitLimit, pauseWindow, hardCap, onState });
+    Object.assign(this, { waitLimit, pauseWindow, hardCap, onState, onReady });
   }
 
   start() {
     return new Promise(resolve => {
       const s = this.s = {
-        t0: performance.now(), speechAt: 0, lastHeardAt: 0, restarts: 0,
+        t0: performance.now(), readyAt: 0, speechAt: 0, lastHeardAt: 0, restarts: 0,
         finals: [], interim: '', lastError: '', userStopped: false, done: false, rec: null,
       };
+      // 「準備中」→「どうぞ」→「聞いています」。マイクが実際に開くまで 0.3〜1秒かかるため、
+      // 準備ができるまで話し始めないように伝える（まとめ 8-4）
       s.ticker = setInterval(() => {
-        const sec = Math.floor((performance.now() - s.t0) / 1000);
-        this.onState(s.speechAt ? 'hearing' : 'waiting', sec);
+        const sec = Math.floor((performance.now() - (s.readyAt || s.t0)) / 1000);
+        this.onState(!s.readyAt ? 'preparing' : s.speechAt ? 'hearing' : 'waiting', sec);
       }, 250);
       s.cap = setTimeout(() => this.stop(), this.hardCap);
 
@@ -45,7 +48,8 @@ export class Listener {
           cands,
           pieces: s.finals.map(f => f[0]),
           error: cands.length ? '' : (s.lastError || 'no-speech'),
-          waitMs: s.speechAt ? Math.round(s.speechAt - s.t0) : null,
+          readyMs: s.readyAt ? Math.round(s.readyAt - s.t0) : null,
+          waitMs: s.speechAt ? Math.round(s.speechAt - (s.readyAt || s.t0)) : null,
           restarts: s.restarts,
           totalMs: Math.round(performance.now() - s.t0),
         });
@@ -66,6 +70,12 @@ export class Listener {
         r.continuous = false;
         r.interimResults = false;
         r.maxAlternatives = 3;
+        // マイクの取り込みが始まった＝ここから話してよい。待ち時間はこの時点から数える
+        r.onaudiostart = () => {
+          if (!mine() || s.readyAt) return;
+          s.readyAt = performance.now();
+          this.onReady();
+        };
         r.onspeechstart = () => { if (mine() && !s.speechAt) s.speechAt = performance.now(); };
         r.onresult = e => {
           if (!mine()) return;
@@ -93,7 +103,7 @@ export class Listener {
           if (fatal) return finish();
           const canRestart = !s.userStopped && s.restarts < RESTART_MAX;
           // 話し始める前に切れた：待ち時間の上限まで作り直す
-          if (!heard && canRestart && now - s.t0 < this.waitLimit) {
+          if (!heard && canRestart && now - (s.readyAt || s.t0) < this.waitLimit) {
             s.restarts++; s.lastError = '';
             return setTimeout(launch, RESTART_GAP);
           }

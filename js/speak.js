@@ -60,7 +60,7 @@ export function runSpeak(root, ctx) {
           fb += `<p class="fb-sub">もう一度言うか、答えを聞いてください（${st.attempts}/${ctx.retryLimit}回）</p>`;
         }
         const label = listening ? st.listenLabel : (st.attempts ? 'もう一度言う' : '話す');
-        actions = `<button class="btn mic ${listening ? 'live' : ''}" data-act="${listening ? 'stop' : 'say'}">${ICON.mic}<span>${esc(label)}</span></button>
+        actions = `<button class="btn mic ${listening ? (st.ready ? 'live' : 'preparing') : ''}" data-act="${listening ? 'stop' : 'say'}">${ICON.mic}<span>${esc(label)}</span></button>
                    <button class="btn quiet" data-act="giveup" ${listening ? 'disabled' : ''}>${st.attempts ? '答えを聞く' : '思い出せない'}</button>`;
       }
 
@@ -74,31 +74,43 @@ export function runSpeak(root, ctx) {
         </section>`;
     };
 
+    // マイクが実際に開くまで 0.3〜1秒かかる。開くまでは「準備中」と出し、
+    // 開いた時点で「どうぞ」に変える（まとめ 8-4）。ここで初めて話してよい
+    const listener = redraw => new Listener({
+      target: S.en,
+      onState: (kind, sec) => {
+        st.listenLabel = kind === 'preparing' ? '準備中…'
+          : kind === 'waiting' ? `どうぞ　${sec}秒` : '聞いています（タップで終わる）';
+        const b = root.querySelector('[data-act="stop"] span');
+        if (b) b.textContent = st.listenLabel;
+      },
+      onReady: () => {
+        st.ready = true;
+        if (settings.haptics && navigator.vibrate) navigator.vibrate(30);   // 話してよい合図（13-10）
+        redraw();
+      },
+    });
+
     const say = async () => {
       voice.stop();
       st.note = '';
-      const L = new Listener({
-        target: S.en,
-        onState: (kind, sec) => {
-          st.listenLabel = kind === 'waiting' ? `どうぞ　${sec}秒` : '聞いています（タップで終わる）';
-          const b = root.querySelector('[data-act="stop"] span');
-          if (b) b.textContent = st.listenLabel;
-        },
-      });
-      st.listening = L; st.listenLabel = 'どうぞ'; stage1();
+      const L = listener(() => stage1());
+      st.listening = L; st.ready = false; st.listenLabel = '準備中…'; stage1();
       const r = await L.start();
       st.listening = null;
       if (r.error) {
-        ctx.log({ type: 's1', attempt: st.attempts + 1, error: r.error, waitMs: r.waitMs, restarts: r.restarts });
+        ctx.log({ type: 's1', attempt: st.attempts + 1, error: r.error, readyMs: r.readyMs, waitMs: r.waitMs, restarts: r.restarts });
         if (isFatal(r.error)) { st.self = true; st.note = errorMessage(r.error); }
-        else st.note = errorMessage(r.error);     // 声がなかった場合は回数に数えない
+        // 声がなかった場合は回数に数えない。話し始めが早すぎると頭の語が届かないため、その案内を添える
+        else st.note = errorMessage(r.error) + '（🎤を押したあと、「どうぞ」が出てから話してください）';
         return stage1();
       }
       st.attempts++;
       const j = judge(S.en, r.cands, ctx.mishear, ctx.extraAnswers);
       st.last = j;
       ctx.log({ type: 's1', attempt: st.attempts, match: j.match, heard: j.heard, pieces: r.pieces,
-                cands: r.cands, ops: j.ops.map(diffLabel), waitMs: r.waitMs, restarts: r.restarts, totalMs: r.totalMs });
+                cands: r.cands, ops: j.ops.map(diffLabel), readyMs: r.readyMs, waitMs: r.waitMs,
+                restarts: r.restarts, totalMs: r.totalMs });
       if (st.attempts === 1) st.first = j.match === 'exact' ? 'ok' : j.match === 'yure' ? 'ok_yure' : null;
       if (j.match !== 'none') {
         st.solved = true;
@@ -145,7 +157,7 @@ export function runSpeak(root, ctx) {
           <div class="feedback" aria-live="polite">${fb}</div>
           <div class="actions">
             <div class="plays" role="group" aria-label="お手本を聞く">${speedBtns}</div>
-            ${sttSupported() ? `<button class="btn mic ${listening ? 'live' : ''}" data-act="${listening ? 'stop' : 'check'}">${ICON.mic}<span>${esc(listening ? st.listenLabel : '言って確かめる')}</span></button>` : ''}
+            ${sttSupported() ? `<button class="btn mic ${listening ? (st.ready ? 'live' : 'preparing') : ''}" data-act="${listening ? 'stop' : 'check'}">${ICON.mic}<span>${esc(listening ? st.listenLabel : '言って確かめる')}</span></button>` : ''}
             <div class="pair">
               <button class="btn" data-act="later" ${listening ? 'disabled' : ''}>またあとで</button>
               <button class="btn strong-outline" data-act="done" ${listening ? 'disabled' : ''}>できた</button>
@@ -157,15 +169,8 @@ export function runSpeak(root, ctx) {
     const check = async () => {
       voice.stop();
       st.note = '';
-      const L = new Listener({
-        target: S.en,
-        onState: (kind, sec) => {
-          st.listenLabel = kind === 'waiting' ? `どうぞ　${sec}秒` : '聞いています（タップで終わる）';
-          const b = root.querySelector('[data-act="stop"] span');
-          if (b) b.textContent = st.listenLabel;
-        },
-      });
-      st.listening = L; st.listenLabel = 'どうぞ'; stage2(false);
+      const L = listener(() => stage2(false));
+      st.listening = L; st.ready = false; st.listenLabel = '準備中…'; stage2(false);
       const r = await L.start();
       st.listening = null;
       if (r.error) {
@@ -177,7 +182,7 @@ export function runSpeak(root, ctx) {
         if (st.check.match === 'exact') chime(settings);
       }
       ctx.log({ type: 's2', check: st.checks, match: st.check.match, heard: st.check.heard, error: st.check.error,
-                ops: (st.check.ops || []).map(diffLabel), waitMs: r.waitMs, restarts: r.restarts });
+                ops: (st.check.ops || []).map(diffLabel), readyMs: r.readyMs, waitMs: r.waitMs, restarts: r.restarts });
       stage2(false);
     };
 

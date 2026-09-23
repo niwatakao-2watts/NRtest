@@ -230,7 +230,7 @@ async function records() {
 }
 
 function downloadCsv(id, evs) {
-  const head = ['t', 'sid', 'appearance', 'type', 'attempt', 'check', 'match', 'heard', 'ops', 'pieces', 'error', 'waitMs', 'restarts', 'first', 'again', 'wid', 'word', 'label', 'wrong'];
+  const head = ['t', 'sid', 'appearance', 'type', 'attempt', 'check', 'match', 'heard', 'ops', 'pieces', 'error', 'readyMs', 'waitMs', 'restarts', 'first', 'again', 'wid', 'word', 'label', 'wrong'];
   const cell = v => `"${String(Array.isArray(v) ? v.join(' | ') : (v ?? '')).replace(/"/g, '""')}"`;
   const csv = '﻿' + [head.join(','), ...evs.map(e => head.map(h => cell(e[h])).join(','))].join('\r\n');
   const a = document.createElement('a');
