@@ -228,3 +228,11 @@ button:focus-visible { outline: 2px solid var(--strong); outline-offset: 3px; }
 /* 今の速さは枠を太くして示す。押すたびにその速さで鳴る（4-1） */
 .btn.play.on { border: 2px solid var(--strong); font-weight: 600; }
 .btn.play:active { transform: scale(.97); }
+
+/* ---- ホーム：メニューだけを大きく置く（13-2・13-7） ---- */
+.home.menu { justify-content: center; gap: 16px; padding-bottom: 15vh; }
+.menu-btn { min-height: 92px; gap: 16px; justify-content: flex-start; padding: 16px 22px; text-align: left; }
+.menu-btn svg { width: 30px; height: 30px; flex: none; }
+.menu-btn .s { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.menu-btn b { display: block; font-size: 1.2rem; font-weight: 600; line-height: 1.4; }
+.menu-btn small { display: block; font-size: .85rem; opacity: .75; }

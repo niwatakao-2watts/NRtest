@@ -26,6 +26,8 @@ const ICON = {
   back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="s" d="M15 5l-7 7 7 7"/></svg>',
   quit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="s" d="M6 6l12 12M18 6 6 18"/></svg>',
   save: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="s" d="M12 4v10M8 11l4 4 4-4M5 19h14"/></svg>',
+  play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="s" d="M8 5.5l10 6.5-10 6.5z"/></svg>',
+  mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="s" x="9" y="3" width="6" height="11" rx="3"/><path class="s" d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6"/></svg>',
 };
 const iconBtn = (act, name, kind = act) =>
   `<button class="icon-btn" data-act="${act}" aria-label="${name}" title="${name}">${ICON[kind]}</button>`;
@@ -65,24 +67,17 @@ function runStep(key, root, S, log) {
 // ---------------- ホーム ----------------
 async function home() {
   applyLook();
-  const sessions = (await allSessions()).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
-  const latest = {};
-  for (const ss of sessions) for (const [sid, it] of Object.entries(ss.items || {})) if (!latest[sid]) latest[sid] = it.first;
   const files = await voice.hasFiles(data.sentences[0].id);
 
   app.innerHTML = `
     <header class="top">${iconBtn('records', '記録')}<h1>暗唱トレーニング</h1>${iconBtn('settings', '設定')}</header>
-    <main class="home">
-      <button class="btn primary big" data-act="start-full">${data.sentences.length}文を練習する</button>
-      <button class="btn" data-act="start-speak">暗唱だけにする（声に出すところまで）</button>
+    <main class="home menu">
+      <button class="btn primary big menu-btn" data-act="start-full">
+        ${ICON.play}<span><b>練習する</b><small>${data.sentences.length}文・全ステップ</small></span></button>
+      <button class="btn big menu-btn" data-act="start-speak">
+        ${ICON.mic}<span><b>暗唱だけ</b><small>声に出すところまで</small></span></button>
       ${sttSupported() ? '' : '<p class="notice">この端末のブラウザは音声認識に対応していません。自分で判定する形で進みます。</p>'}
       ${files ? '' : '<p class="notice">音声ファイルがまだ置かれていないため、ブラウザの読み上げで代用しています。</p>'}
-      <h2 class="section-title">前回の結果</h2>
-      <ol class="slist">
-        ${data.sentences.map(s => `
-          <li><span class="sid">${s.id}</span><span class="sja">${esc(s.ja)}</span>
-          <span class="badge ${FIRST_CLASS[latest[s.id]] || ''}">${latest[s.id] ? FIRST_LABEL[latest[s.id]] : '未実施'}</span></li>`).join('')}
-      </ol>
     </main>`;
   app.onclick = e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
