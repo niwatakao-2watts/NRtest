@@ -7,6 +7,9 @@ import { wordCount } from './judge.js';
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 export const sttSupported = () => !!SR;
 
+const RESTART_GAP = 400;      // やり直しの間隔。短いと端末の開始音と終了音が重なって濁った音になる
+const RESTART_MAX = 3;        // やり直しの回数の上限（音が何度も鳴るのを防ぐ）
+
 export class Listener {
   constructor({ target, waitLimit = 8000, pauseWindow = 5000, hardCap = 30000, onState = () => {} }) {
     this.targetWords = wordCount(target);
@@ -30,6 +33,7 @@ export class Listener {
         s.done = true;
         clearInterval(s.ticker); clearTimeout(s.cap); clearTimeout(s.watch);
         if (s.interim) s.finals.push([s.interim.trim()]);
+        try { s.rec && s.rec.abort(); } catch (e) { /* 無視 */ }    // マイクを確実に手放す
         let cands = [];
         if (s.finals.length === 1) cands = s.finals[0];
         else if (s.finals.length > 1) {
@@ -50,14 +54,21 @@ export class Listener {
 
       const heardWords = () => wordCount(s.finals.map(f => f[0]).join(' '));
 
+      // やり直しのたびに番号を進める。古い認識から遅れて届く知らせは無視する
+      // （二重に動くと、端末の開始音・終了音が重なって濁った音になり、聞き取りも不安定になる）
+      let gen = 0;
+
       const launch = () => {
+        const my = ++gen;
+        const mine = () => my === gen && !s.done;
         const r = new SR();
         r.lang = 'en-US';
         r.continuous = false;
         r.interimResults = false;
         r.maxAlternatives = 3;
-        r.onspeechstart = () => { if (!s.speechAt) s.speechAt = performance.now(); };
+        r.onspeechstart = () => { if (mine() && !s.speechAt) s.speechAt = performance.now(); };
         r.onresult = e => {
+          if (!mine()) return;
           for (let i = e.resultIndex; i < e.results.length; i++) {
             const res = e.results[i];
             if (res.isFinal) {
@@ -72,23 +83,24 @@ export class Listener {
           if (!s.speechAt) s.speechAt = performance.now();
           s.lastHeardAt = performance.now();
         };
-        r.onerror = e => { s.lastError = e.error; };
+        r.onerror = e => { if (mine()) s.lastError = e.error; };
         r.onend = () => {
-          if (s.done) return;
+          if (!mine()) return;
           const now = performance.now();
           const heard = s.finals.length > 0;
           const fatal = ['not-allowed', 'service-not-allowed', 'network', 'audio-capture',
                          'language-not-supported'].includes(s.lastError);
           if (fatal) return finish();
+          const canRestart = !s.userStopped && s.restarts < RESTART_MAX;
           // 話し始める前に切れた：待ち時間の上限まで作り直す
-          if (!heard && !s.userStopped && now - s.t0 < this.waitLimit) {
+          if (!heard && canRestart && now - s.t0 < this.waitLimit) {
             s.restarts++; s.lastError = '';
-            return setTimeout(launch, 120);
+            return setTimeout(launch, RESTART_GAP);
           }
           // 語数が足りない：続きを待って作り直す
-          if (heard && !s.userStopped && heardWords() < this.targetWords && now - s.lastHeardAt < this.pauseWindow) {
+          if (heard && canRestart && heardWords() < this.targetWords && now - s.lastHeardAt < this.pauseWindow) {
             s.restarts++; s.lastError = '';
-            return setTimeout(launch, 120);
+            return setTimeout(launch, RESTART_GAP);
           }
           finish();
         };

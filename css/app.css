@@ -42,9 +42,14 @@ body {
 .progress { margin: 0; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .sid { font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
 .icon-btn {
-  font: inherit; font-size: .85rem; color: var(--muted); background: none; border: 0; padding: 8px 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--muted); background: none; border: 0; padding: 8px; min-width: 44px; min-height: 44px;
   justify-self: start; cursor: pointer;
 }
+.icon-btn svg { width: 26px; height: 26px; fill: none; }
+.icon-btn .s { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.icon-btn.inline { min-width: 36px; min-height: 36px; padding: 4px; }
+.icon-btn.inline svg { width: 22px; height: 22px; }
 
 main { padding: 8px 18px 32px; flex: 1; display: flex; flex-direction: column; }
 
@@ -205,3 +210,20 @@ button:focus-visible { outline: 2px solid var(--strong); outline-offset: 3px; }
 .tile:active { transform: translateY(-2px); }
 .tile.used { opacity: 0; pointer-events: none; }
 .tile.miss { animation: nudge .22s ease-in-out; }
+
+/* ---- 段階2：中央は1つの文だけ、音声のボタンは下にまとめる（13-3・13-4） ---- */
+.show-box { margin: 4px 0 10px; }
+.show-box .ja { font-size: 1.45rem; line-height: 1.6; font-weight: 500; margin: 0 0 10px; text-wrap: pretty; }
+.show-box .en {
+  font-family: "Iowan Old Style", Georgia, "Times New Roman", serif;
+  font-size: 1.5rem; line-height: 1.5; margin: 0 0 10px;
+}
+.show-box .link { font-size: .95rem; }
+.plays { display: flex; gap: 8px; }
+.btn.play {
+  flex: 1; min-height: 56px; padding: 10px 6px; gap: 6px; flex-direction: column; font-size: .85rem;
+}
+.btn.play svg { width: 22px; height: 22px; fill: currentColor; }
+.btn.play .stroke { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.btn.play.on { border: 2px solid var(--strong); font-weight: 600; }
+.btn.play.ja-play { flex: 0 0 auto; min-width: 72px; color: var(--muted); }

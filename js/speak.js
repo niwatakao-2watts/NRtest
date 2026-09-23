@@ -129,22 +129,22 @@ export function runSpeak(root, ctx) {
         fb += `<p class="fb-label">聞き取った文</p><p class="heard">${esc(c.heard)}</p>`;
       }
 
-      const speedBtns = SPEEDS.map(([k, l]) => `<button class="seg ${st.speed === k ? 'on' : ''}" data-act="speed" data-speed="${k}" aria-pressed="${st.speed === k}">${l}</button>`).join('');
+      // 音声のボタンは下にまとめ、繰り返し聞きやすくする（13-4）
+      const speedBtns = SPEEDS.map(([k, l]) => `
+        <button class="btn play ${st.speed === k ? 'on' : ''}" data-act="speed" data-speed="${k}"
+          ${listening ? 'disabled' : ''} aria-pressed="${st.speed === k}">${ICON.speaker}<span>${l}</span></button>`).join('');
       root.innerHTML = `
         <section class="step" aria-label="段階2 確かめてまねる">
           <p class="stage-label"><span class="dot done"></span><span class="dot on"></span>確かめてまねる</p>
-          <p class="ja small">${esc(S.ja)}</p>
-          <div class="en-box ${st.showEn ? '' : 'hidden'}">
-            ${st.showEn ? `<p class="en">${esc(S.en)}</p>` : '<p class="en-hidden">英文は隠れています</p>'}
-            <button class="link" data-act="toggle-en" ${listening ? 'disabled' : ''}>${st.showEn ? '英文を隠す' : '英文を見る'}</button>
-          </div>
-          <div class="tools">
-            <button class="tool strong" data-act="play-en" ${listening ? 'disabled' : ''}>${ICON.speaker}英語</button>
-            <div class="segs" role="group" aria-label="速さ">${speedBtns}</div>
-            <button class="tool" data-act="play-ja" ${listening ? 'disabled' : ''}>${ICON.speaker}日本語</button>
+          <div class="show-box">
+            <p class="${st.showEn ? 'en' : 'ja'}">${esc(st.showEn ? S.en : S.ja)}</p>
+            <button class="link" data-act="toggle-en" ${listening ? 'disabled' : ''}>${st.showEn ? '日本語を表示' : '英語を表示'}</button>
           </div>
           <div class="feedback" aria-live="polite">${fb}</div>
           <div class="actions">
+            <div class="plays" role="group" aria-label="お手本を聞く">${speedBtns}
+              <button class="btn play ja-play" data-act="play-ja" ${listening ? 'disabled' : ''} aria-label="日本語を聞く">${ICON.speaker}<span>日本語</span></button>
+            </div>
             ${st.self ? '' : `<button class="btn mic ${listening ? 'live' : ''}" data-act="${listening ? 'stop' : 'check'}">${ICON.mic}<span>${esc(listening ? st.listenLabel : '言って確かめる')}</span></button>`}
             <div class="pair">
               <button class="btn" data-act="later" ${listening ? 'disabled' : ''}>またあとで</button>
