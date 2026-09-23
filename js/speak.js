@@ -48,6 +48,7 @@ export function runSpeak(root, ctx) {
         const one = st.first === 'ok' || st.first === 'ok_yure';
         fb += `<p class="fb-big ok">${one ? '一発OK' : '言えました'}</p>`;
         if (st.last && st.last.match === 'yure') fb += `<p class="fb-sub">「${esc(st.last.yure.to)}」と聞こえました（${esc(st.last.yure.from)} の発音を意識しましょう）</p>`;
+        if (st.last && st.last.match === 'extra') fb += `<p class="fb-sub">${st.last.extra.where === 'head' ? '先頭' : '最後'}に「${esc(st.last.extra.word)}」が入って聞こえましたが、文は言えています</p>`;
         actions = `<button class="btn primary" data-act="to2">お手本で確かめる</button>`;
       } else if (st.self) {
         fb += `<p class="fb-sub">音声認識が使えないため、自分で判定してください。</p>`;
@@ -57,6 +58,7 @@ export function runSpeak(root, ctx) {
       } else {
         if (st.last && st.last.match === 'none') {
           fb += `<p class="fb-label">聞き取った文</p><p class="heard">${esc(st.last.heard)}</p>`;
+          if (st.last.tailOnly) fb += `<p class="fb-sub">文のとちゅうから聞こえました。<strong>文の最初から</strong>言ってください</p>`;
           fb += `<p class="fb-sub">もう一度言うか、答えを聞いてください（${st.attempts}/${ctx.retryLimit}回）</p>`;
         }
         const label = listening ? st.listenLabel : (st.attempts ? 'もう一度言う' : '話す');
@@ -113,7 +115,9 @@ export function runSpeak(root, ctx) {
                 cands: r.cands, ops: j.ops.map(diffLabel), readyMs: r.readyMs, waitMs: r.waitMs,
                 restarts: r.restarts, retrySilence: r.retrySilence, retryMore: r.retryMore,
                 shortStops: r.shortStops, totalMs: r.totalMs });
-      if (st.attempts === 1) st.first = j.match === 'exact' ? 'ok' : j.match === 'yure' ? 'ok_yure' : null;
+      // 先頭・末尾に余計な1語が付いただけの場合も合格（中身は言えている。8-4）
+      if (st.attempts === 1) st.first = j.match === 'exact' ? 'ok'
+        : (j.match === 'yure' || j.match === 'extra') ? 'ok_yure' : null;
       if (j.match !== 'none') {
         st.solved = true;
         if (!st.first) st.first = 'retry_ok';
@@ -139,8 +143,12 @@ export function runSpeak(root, ctx) {
       if (c && c.error) fb += `<p class="fb-sub">${esc(errorMessage(c.error))}</p>`;
       else if (c) {
         if (c.match === 'exact') fb += `<p class="fb-big ok">お手本どおりに聞き取れました</p>`;
+        else if (c.match === 'extra') fb += `<p class="fb-big ok">言えています</p><p class="fb-sub">${c.extra.where === 'head' ? '先頭' : '最後'}に「${esc(c.extra.word)}」が入って聞こえました</p>`;
         else if (c.match === 'yure') fb += `<p class="fb-big near">「${esc(c.yure.to)}」と聞こえました</p><p class="fb-sub">${esc(c.yure.from)} の発音を意識して、もう一度まねてみましょう</p>`;
-        else fb += `<p class="fb-big">ちがうところ</p><ul class="diff">${c.ops.map(o => `<li>${esc(diffLabel(o))}</li>`).join('')}</ul>`;
+        else {
+          fb += `<p class="fb-big">ちがうところ</p><ul class="diff">${c.ops.map(o => `<li>${esc(diffLabel(o))}</li>`).join('')}</ul>`;
+          if (c.tailOnly) fb += `<p class="fb-sub">文のとちゅうから聞こえました。<strong>文の最初から</strong>言ってください</p>`;
+        }
         fb += `<p class="fb-label">聞き取った文</p><p class="heard">${esc(c.heard)}</p>`;
       }
 
@@ -181,7 +189,7 @@ export function runSpeak(root, ctx) {
       } else {
         st.checks++;
         st.check = judge(S.en, r.cands, ctx.mishear, ctx.extraAnswers);
-        if (st.check.match === 'exact') chime(settings);
+        if (st.check.match === 'exact' || st.check.match === 'extra') chime(settings);
       }
       ctx.log({ type: 's2', check: st.checks, match: st.check.match, heard: st.check.heard, error: st.check.error,
                 ops: (st.check.ops || []).map(diffLabel), readyMs: r.readyMs, waitMs: r.waitMs,

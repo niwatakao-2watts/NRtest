@@ -94,8 +94,33 @@ export function makeMishearSet(rows) {
 }
 
 /**
+ * 先頭または末尾に余計な語が1つ付いただけで、残りが完全一致かを調べる（まとめ 8-4）。
+ * 認識器が、直前の物音や息を語として拾うことがあるため（実機の記録：
+ * 「here you can't park your car here」「York you can't park your car here」など）。
+ * 戻り値：{ word, where: 'head' | 'tail' } か null
+ */
+function extraWord(answerN, heardN) {
+  const a = answerN.split(' '), h = heardN.split(' ');
+  if (h.length !== a.length + 1) return null;
+  const same = (x, y) => x.length === y.length && x.every((w, i) => w === y[i]);
+  if (same(h.slice(1), a)) return { word: h[0], where: 'head' };
+  if (same(h.slice(0, -1), a)) return { word: h[h.length - 1], where: 'tail' };
+  return null;
+}
+
+/** 聞き取りが、正解文の後ろの部分だけと一致しているか（文の頭が届かなかった場合。まとめ 8-4） */
+function tailOnly(answerN, heardN) {
+  const a = answerN.split(' '), h = heardN.split(' ');
+  if (h.length < 2 || h.length >= a.length) return false;
+  return a.slice(a.length - h.length).every((w, i) => w === h[i]);
+}
+
+/**
  * 聞き取った候補を正解文と比べる。
- * 戻り値 match: 'exact'（完全一致）/ 'yure'（登録済みの聞き取りゆれ1語だけの違い）/ 'none'
+ * 戻り値 match:
+ *   'exact' 完全一致 / 'yure' 登録済みの聞き取りゆれ1語だけの違い
+ *   'extra' 先頭か末尾に余計な語が1つ付いただけで、中身は完全一致
+ *   'none'  不一致（tailOnly が true なら、文の頭が届かなかった可能性が高い）
  * best: 正解文に最も近い候補（違いの表示に使う）
  */
 export function judge(target, candidates, mishearSet, extraAnswers = []) {
@@ -106,6 +131,13 @@ export function judge(target, candidates, mishearSet, extraAnswers = []) {
   for (const c of cands) {
     if (answers.includes(c.n) || answersLoose.includes(loose(c.n))) {
       return { match: 'exact', best: c.raw, ops: [], heard: c.raw };
+    }
+  }
+  // 先頭・末尾の余計な1語だけの違いは、中身が完全に言えているので合格とする（8-4）
+  for (const c of cands) {
+    for (const a of answers) {
+      const ex = extraWord(a, c.n);
+      if (ex) return { match: 'extra', best: c.raw, ops: [], heard: c.raw, extra: ex };
     }
   }
   let best = null;
@@ -119,7 +151,8 @@ export function judge(target, candidates, mishearSet, extraAnswers = []) {
   if (o.length === 1 && o[0].t === 'sub' && mishearSet && mishearSet.has(`${o[0].from}|${o[0].to}`)) {
     return { match: 'yure', best: best.c.raw, ops: o, heard: best.c.raw, yure: { from: o[0].from, to: o[0].to } };
   }
-  return { match: 'none', best: best.c.raw, ops: o, heard: best.c.raw };
+  const head = answers.some(a => tailOnly(a, best.c.n));    // 文の頭が届かなかった可能性
+  return { match: 'none', best: best.c.raw, ops: o, heard: best.c.raw, tailOnly: head };
 }
 
 export function wordCount(s) {
