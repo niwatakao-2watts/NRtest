@@ -17,10 +17,28 @@ export async function loadData() {
   const sentences = (merged.sentences || []).sort((a, b) => a.id.localeCompare(b.id));
   const patterns = {};
   for (const r of merged.patterns || []) (patterns[r.sid] = patterns[r.sid] || []).push(r.text);
+  // 文ごとに、各ステップのデータを引ける形にまとめる（M2。まとめ 15-3〜15-6）
+  const group = rows => {
+    const m = {};
+    for (const r of rows || []) (m[r.sid] = m[r.sid] || []).push(r);
+    return m;
+  };
+  const byNo = m => { for (const rows of Object.values(m)) rows.sort((a, b) => (a.no || 0) - (b.no || 0)); return m; };
+  const wordsById = Object.fromEntries((common.words || []).map(w => [w.id, w]));
+  const words = {};
+  for (const [sid, rows] of Object.entries(group(merged.sentenceWords))) {
+    words[sid] = rows.sort((a, b) => (a.order || 0) - (b.order || 0)).map(r => wordsById[r.wid]).filter(Boolean);
+  }
+
   return {
     index, common, sentences, patterns,
     byId: Object.fromEntries(sentences.map(s => [s.id, s])),
     mishear: makeMishearSet(common.mishear),
+    words,
+    structure: byNo(group(merged.structure)),
+    order: byNo(group(merged.order)),
+    cloze: Object.fromEntries((merged.cloze || []).map(r => [r.sid, r])),
+    structureChoice: Object.fromEntries((merged.structureChoice || []).map(r => [r.sid, r])),
     raw: merged,
   };
 }

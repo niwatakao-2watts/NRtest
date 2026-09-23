@@ -15,13 +15,15 @@ export class Voice {
 
   url(sid, kind, speed) {
     const v = this.getSettings().voice;
-    return kind === 'ja' ? `audio/${v}/${sid}_ja.mp3` : `audio/${v}/${sid}_en_${speed}.mp3`;
+    if (kind === 'ja') return `audio/${v}/${sid}_ja.mp3`;
+    if (kind === 'word') return `audio/${v}/${sid}_en.mp3`;     // 単語の音声（意味理解。4-2）
+    return `audio/${v}/${sid}_en_${speed}.mp3`;
   }
 
-  /** kind: 'ja' | 'en'。再生が終わったら解決する Promise を返す */
+  /** kind: 'ja' | 'en' | 'word'。再生が終わったら解決する Promise を返す */
   play(sentence, kind, speed) {
     this.stop();
-    speed = speed || this.getSettings().speed;
+    speed = kind === 'word' ? 'normal' : (speed || this.getSettings().speed);
     const url = this.url(sentence.id, kind, speed);
     const text = kind === 'ja' ? stripParen(sentence.jaTts || sentence.ja) : sentence.en;
     const rate = kind === 'ja' ? RATE.ja : RATE[speed];

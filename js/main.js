@@ -1,7 +1,8 @@
-// 第1段階：声に出すステップ（段階1・段階2）で10文を回す
+// M2：声に出すステップ（4-1）＋ 意味理解・構造把握・空欄補充・語順並べ替え（4-2〜4-5）で10文を回す
 import { loadData } from './data.js';
 import { Voice } from './audio.js';
 import { runSpeak } from './speak.js';
+import { runMeaning, runStructureA, runStructureB, runCloze, runOrder } from './steps.js';
 import { sttSupported } from './stt.js';
 import { addEvent, putSession, allSessions, eventsOf } from './db.js';
 
@@ -9,13 +10,14 @@ const RETRY_LIMIT = 5;      // 段階1のやり直し上限（まとめ 10-2）
 const REQUEUE_LIMIT = 15;   // セッション内反復の上限（2-3）
 const REQUEUE_GAP = 3;      // 再出題までに挟む文の数（2-3：直後に連続させない）
 
-const DEFAULTS = { voice: 'male', speed: 'normal', autoJa: true, sound: true, haptics: true, theme: 'light', size: 'l' };
+const DEFAULTS = { voice: 'male', speed: 'normal', autoJa: true, echo: true, sound: true, haptics: true, theme: 'light', size: 'l' };
 const loadSettings = () => { try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('eigo-settings') || '{}') }; } catch (e) { return { ...DEFAULTS }; } };
 const saveSettings = s => { try { localStorage.setItem('eigo-settings', JSON.stringify(s)); } catch (e) { /* 無視 */ } };
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const FIRST_LABEL = { ok: '一発OK', ok_yure: '一発OK（ゆれ）', retry_ok: 'やり直して言えた', ng: '言えなかった' };
 const FIRST_CLASS = { ok: 'ok', ok_yure: 'near', retry_ok: 'mid', ng: 'ng' };
+const STEP_LABEL = { meaning: '単語の意味', structureA: '文のかたち', structureB: '意味の取り方', cloze: '空欄', order: '語順' };
 
 const app = document.getElementById('app');
 let settings = loadSettings();
@@ -27,6 +29,28 @@ function applyLook() {
   document.documentElement.dataset.size = settings.size;
 }
 
+/** その文で行えるステップ（データがあるものだけ。まとめ 2-1 の新規の流れの順） */
+function stepsOf(sid) {
+  const has = {
+    meaning: (data.words[sid] || []).length > 0,
+    structureA: (data.structure[sid] || []).some(r => r.label),
+    structureB: !!data.structureChoice[sid],
+    cloze: !!data.cloze[sid],
+    order: (data.order[sid] || []).length > 0,
+  };
+  return ['meaning', 'structureA', 'structureB', 'cloze', 'order'].filter(k => has[k]);
+}
+
+function runStep(key, root, S, log) {
+  const ctx = { sentence: S, voice, settings, log };
+  if (key === 'meaning') return runMeaning(root, { ...ctx, words: data.words[S.id] || [] });
+  if (key === 'structureA') return runStructureA(root, { ...ctx, rows: data.structure[S.id] || [] });
+  if (key === 'structureB') return runStructureB(root, { ...ctx, choice: data.structureChoice[S.id] });
+  if (key === 'cloze') return runCloze(root, { ...ctx, cloze: data.cloze[S.id], orderWords: (data.order[S.id] || []).filter(r => r.extra !== 1) });
+  if (key === 'order') return runOrder(root, { ...ctx, rows: data.order[S.id] || [] });
+  return Promise.resolve({ wrong: 0 });
+}
+
 // ---------------- ホーム ----------------
 async function home() {
   applyLook();
@@ -36,9 +60,11 @@ async function home() {
   const files = await voice.hasFiles(data.sentences[0].id);
 
   app.innerHTML = `
-    <header class="top"><span></span><h1>暗唱トレーニング</h1><button class="icon-btn" data-act="settings">設定</button></header>
+    <header class="top"><button class="icon-btn" data-act="records">記録</button><h1>暗唱トレーニング</h1>
+      <button class="icon-btn" data-act="settings">設定</button></header>
     <main class="home">
-      <button class="btn primary big" data-act="start">${data.sentences.length}文を練習する</button>
+      <button class="btn primary big" data-act="start-full">${data.sentences.length}文を練習する</button>
+      <button class="btn" data-act="start-speak">暗唱だけにする（声に出すところまで）</button>
       ${sttSupported() ? '' : '<p class="notice">この端末のブラウザは音声認識に対応していません。自分で判定する形で進みます。</p>'}
       ${files ? '' : '<p class="notice">音声ファイルがまだ置かれていないため、ブラウザの読み上げで代用しています。</p>'}
       <h2 class="section-title">前回の結果</h2>
@@ -50,8 +76,11 @@ async function home() {
     </main>`;
   app.onclick = e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
-    if (b.dataset.act === 'start') session(data.sentences.map(s => s.id));
+    const ids = data.sentences.map(s => s.id);
+    if (b.dataset.act === 'start-full') session(ids, 'full');
+    if (b.dataset.act === 'start-speak') session(ids, 'speak');
     if (b.dataset.act === 'settings') settingsView();
+    if (b.dataset.act === 'records') records();
   };
 }
 
@@ -66,6 +95,7 @@ function settingsView() {
       <label>声</label>${opt('voice', [['male', '男性'], ['female', '女性']])}
       <label>英語の速さ</label>${opt('speed', [['normal', 'ふつう'], ['slow', 'ゆっくり'], ['fast', 'はやい']])}
       <label>日本語の自動読み上げ</label>${opt('autoJa', onoff)}
+      <label>正解したあとに英文を読む</label>${opt('echo', onoff)}
       <label>効果音</label>${opt('sound', onoff)}
       <label>振動</label>${opt('haptics', onoff)}
       <label>画面</label>${opt('theme', [['light', 'ライト'], ['dark', 'ダーク']])}
@@ -83,11 +113,12 @@ function settingsView() {
 }
 
 // ---------------- セッション ----------------
-async function session(ids) {
+async function session(ids, mode) {
   const id = new Date().toISOString();
-  const ss = { id, startedAt: id, items: {}, done: false };
-  const queue = ids.map(sid => ({ sid, appearance: 1 }));
-  let stop = false;
+  const ss = { id, startedAt: id, mode, items: {}, done: false };
+  const queue = ids.map(sid => ({ sid, appearance: 1, steps: mode === 'full' ? stepsOf(sid) : [] }));
+  let stop = false, quit;
+  const quitted = new Promise(r => { quit = r; });     // 中断したときに、待っている画面を終わらせる
 
   while (queue.length && !stop) {
     const item = queue.shift();
@@ -99,22 +130,33 @@ async function session(ids) {
       <main id="step"></main>`;
     app.onclick = e => {
       const b = e.target.closest('[data-act="quit"]');
-      if (b && confirm('中断してホームに戻りますか？ここまでの記録は残ります。')) { stop = true; voice.stop(); home(); }
+      if (b && confirm('中断してホームに戻りますか？ここまでの記録は残ります。')) { stop = true; voice.stop(); quit(null); home(); }
     };
-    const res = await runSpeak(document.getElementById('step'), {
+    const el = document.getElementById('step');
+    const log = ev => addEvent({ session: id, sid: S.id, appearance: item.appearance, t: new Date().toISOString(), ...ev });
+    const res = await Promise.race([quitted, runSpeak(el, {
       sentence: S, voice, settings, mishear: data.mishear,
-      extraAnswers: data.patterns[S.id] || [], retryLimit: RETRY_LIMIT,
-      log: ev => addEvent({ session: id, sid: S.id, appearance: item.appearance, t: new Date().toISOString(), ...ev }),
-    });
+      extraAnswers: data.patterns[S.id] || [], retryLimit: RETRY_LIMIT, log,
+    })]);
+    if (stop || !res) break;
+
+    // 声に出すステップのあと、残りのステップを順に行う（2-1）
+    const wrongSteps = [], wrongCount = {};
+    for (const key of item.steps) {
+      const r = await Promise.race([quitted, runStep(key, el, S, log)]);
+      if (stop || !r) break;
+      wrongCount[key] = r.wrong;
+      if (r.wrong > 0) wrongSteps.push(key);
+    }
     if (stop) break;
 
-    const it = ss.items[S.id] || (ss.items[S.id] = { first: res.first, appearances: 0, oneShotLater: false });
+    const it = ss.items[S.id] || (ss.items[S.id] = { first: res.first, appearances: 0, oneShotLater: false, wrong: wrongCount });
     it.appearances = item.appearance;
     const oneShot = res.first === 'ok' || res.first === 'ok_yure';
-    if (item.appearance > 1 && oneShot) it.oneShotLater = true;
-    // 一発OKでなかった文・「またあとで」の文は、他の文を挟んでもう一度（まとめ 2-3）
-    if ((!oneShot || res.again) && item.appearance < REQUEUE_LIMIT) {
-      queue.splice(Math.min(REQUEUE_GAP, queue.length), 0, { sid: S.id, appearance: item.appearance + 1 });
+    if (item.appearance > 1 && oneShot && !wrongSteps.length) it.oneShotLater = true;
+    // 一発OKでなかった文・「またあとで」の文・誤答したステップがある文は、他の文を挟んでもう一度（まとめ 2-3）
+    if ((!oneShot || res.again || wrongSteps.length) && item.appearance < REQUEUE_LIMIT) {
+      queue.splice(Math.min(REQUEUE_GAP, queue.length), 0, { sid: S.id, appearance: item.appearance + 1, steps: wrongSteps });
     }
     await putSession(ss);
   }
@@ -128,6 +170,8 @@ async function session(ids) {
 function summary(ss) {
   const items = Object.entries(ss.items);
   const count = k => items.filter(([, it]) => it.first === k).length;
+  const wrongLine = it => Object.entries(it.wrong || {}).filter(([, n]) => n > 0)
+    .map(([k, n]) => `${STEP_LABEL[k]} ${n}`).join('　');
   app.innerHTML = `
     <header class="top"><span></span><h1>おつかれさま</h1><span></span></header>
     <main class="summary">
@@ -139,7 +183,8 @@ function summary(ss) {
       <ol class="slist">
         ${items.map(([sid, it]) => `<li><span class="sid">${sid}</span><span class="sja">${esc(data.byId[sid].en)}</span>
           <span class="badge ${FIRST_CLASS[it.first]}">${FIRST_LABEL[it.first]}</span>
-          ${it.appearances > 1 ? `<span class="rep">${it.appearances}回目${it.oneShotLater ? 'で一発OK' : 'まで'}</span>` : ''}</li>`).join('')}
+          ${it.appearances > 1 ? `<span class="rep">${it.appearances}回目${it.oneShotLater ? 'で一発OK' : 'まで'}</span>` : ''}
+          ${wrongLine(it) ? `<span class="rep">誤答　${esc(wrongLine(it))}</span>` : ''}</li>`).join('')}
       </ol>
       <div class="pair">
         <button class="btn" data-act="csv">CSVで保存</button>
@@ -153,15 +198,39 @@ function summary(ss) {
   };
 }
 
+// ---------------- 記録（中断したセッションも保存できる） ----------------
+async function records() {
+  const sessions = (await allSessions()).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+  const when = t => t.slice(0, 16).replace('T', ' ').replace(/-/g, '/');
+  app.innerHTML = `
+    <header class="top"><button class="icon-btn" data-act="back">戻る</button><h1>記録</h1><span></span></header>
+    <main class="home">
+      ${sessions.length ? '' : '<p class="notice">まだ記録がありません。</p>'}
+      <ol class="slist">
+        ${sessions.map(ss => `<li><span class="sid">${when(ss.startedAt)}</span>
+          <span class="sja">${Object.keys(ss.items || {}).length}文　${ss.mode === 'speak' ? '暗唱だけ' : 'フルコース'}${ss.done ? '' : '（中断）'}</span>
+          <span class="rep"><button class="link" data-csv="${esc(ss.id)}">CSVで保存</button></span></li>`).join('')}
+      </ol>
+    </main>`;
+  app.onclick = async e => {
+    const b = e.target.closest('[data-act],[data-csv]'); if (!b) return;
+    if (b.dataset.act === 'back') return home();
+    if (b.dataset.csv) downloadCsv(b.dataset.csv, await eventsOf(b.dataset.csv));
+  };
+}
+
 function downloadCsv(id, evs) {
-  const head = ['t', 'sid', 'appearance', 'type', 'attempt', 'check', 'match', 'heard', 'ops', 'pieces', 'error', 'waitMs', 'restarts', 'first', 'again'];
+  const head = ['t', 'sid', 'appearance', 'type', 'attempt', 'check', 'match', 'heard', 'ops', 'pieces', 'error', 'waitMs', 'restarts', 'first', 'again', 'wid', 'word', 'label', 'wrong'];
   const cell = v => `"${String(Array.isArray(v) ? v.join(' | ') : (v ?? '')).replace(/"/g, '""')}"`;
-  const csv = '\uFEFF' + [head.join(','), ...evs.map(e => head.map(h => cell(e[h])).join(','))].join('\r\n');
+  const csv = '﻿' + [head.join(','), ...evs.map(e => head.map(h => cell(e[h])).join(','))].join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
   a.download = `session-${id.slice(0, 19).replace(/[-:T]/g, '')}.csv`;
+  // Android では、画面に置いてから押さないと保存されないことがある
+  a.style.display = 'none';
+  document.body.appendChild(a);
   a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(a.href); }, 60000);
 }
 
 // ---------------- 起動 ----------------

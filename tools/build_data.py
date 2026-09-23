@@ -186,6 +186,19 @@ def validate(d):
                 E(f'05：{sid} 語順番号 {r.get("no")} の語「{r.get("word")}」が 08 の「{main.get(r.get("no"))}」と一致しません')
         if not any(r.get('label') for r in rows):
             W(f'05：{sid} に文要素ラベルが1つもありません')
+        # 1つの要素が2語以上のまとまり（the violin など）のときは、続きの語に同じラベルを付ける。
+        # 飛び飛びのラベルは記入もれの可能性が高いため、ここで止める（15-4）
+        for label in LABELS:
+            group = [r for r in rows if r.get('label') == label]
+            if not group:
+                continue
+            nos = [r.get('no') for r in group]
+            if nos != list(range(min(nos), min(nos) + len(nos))):
+                E(f'05：{sid} の「{label}」の語が続いていません（語順番号 {nos}）。'
+                  f'まとまりの語だけに同じラベルを付けてください')
+            orders = {r.get('order') for r in group}
+            if len(orders) > 1:
+                E(f'05：{sid} の「{label}」のまとまりで出題順がそろっていません（{sorted(orders, key=str)}）')
 
     for r in d['cloze']:
         if not check_sid('07', r):

@@ -76,7 +76,7 @@
    "ja": "ラジオをつけてもいいですか。",
    "grade": "高1",
    "difficulty": 2,
-   "note": "Can I 〜? は自分がしてよいか尋ねる。別の言い方：Can I turn the radio on?",
+   "note": "Can I 〜? は自分がしてよいか尋ねる",
    "grammarIds": [
     "G010"
    ]
@@ -98,7 +98,7 @@
    "ja": "その本を貸してもらえますか？",
    "grade": "高1",
    "difficulty": 3,
-   "note": "lendは「貸す」。borrowと混同しやすい。別の言い方：Could you lend the book to me?",
+   "note": "lendは「貸す」。borrowと混同しやすい",
    "grammarIds": [
     "G012",
     "G015"
@@ -212,13 +212,17 @@
    "sid": "S0001",
    "no": 3,
    "word": "a",
-   "note": "色分け対象外"
+   "label": "補語",
+   "order": 3,
+   "note": "補語（a soccer fan）のまとまり"
   },
   {
    "sid": "S0001",
    "no": 4,
    "word": "soccer",
-   "note": "色分け対象外"
+   "label": "補語",
+   "order": 3,
+   "note": "補語（a soccer fan）のまとまり"
   },
   {
    "sid": "S0001",
@@ -339,7 +343,9 @@
    "sid": "S0004",
    "no": 4,
    "word": "the",
-   "note": "色分け対象外"
+   "label": "目的語",
+   "order": 4,
+   "note": "目的語（the violin）のまとまり"
   },
   {
    "sid": "S0004",
@@ -436,7 +442,9 @@
    "sid": "S0006",
    "no": 4,
    "word": "your",
-   "note": "色分け対象外"
+   "label": "目的語",
+   "order": 4,
+   "note": "目的語（your car）のまとまり"
   },
   {
    "sid": "S0006",
@@ -477,13 +485,17 @@
    "sid": "S0007",
    "no": 4,
    "word": "on",
-   "note": "turnと一体（色分け対象外）"
+   "label": "動詞",
+   "order": 3,
+   "note": "turn on で1つの動詞（まとまり）"
   },
   {
    "sid": "S0007",
    "no": 5,
    "word": "the",
-   "note": "色分け対象外"
+   "label": "目的語",
+   "order": 4,
+   "note": "目的語（the radio）のまとまり"
   },
   {
    "sid": "S0007",
@@ -517,7 +529,9 @@
    "sid": "S0008",
    "no": 4,
    "word": "the",
-   "note": "色分け対象外"
+   "label": "目的語",
+   "order": 4,
+   "note": "目的語（the window）のまとまり"
   },
   {
    "sid": "S0008",
@@ -559,7 +573,9 @@
    "sid": "S0009",
    "no": 5,
    "word": "the",
-   "note": "色分け対象外"
+   "label": "目的語",
+   "order": 5,
+   "note": "目的語（the book）のまとまり"
   },
   {
    "sid": "S0009",
@@ -594,7 +610,9 @@
    "sid": "S0010",
    "no": 4,
    "word": "your",
-   "note": "色分け対象外"
+   "label": "目的語",
+   "order": 4,
+   "note": "目的語（your bathroom）のまとまり"
   },
   {
    "sid": "S0010",
@@ -1254,5 +1272,78 @@
    "note": "不要語：your と my の取り違えを誘う"
   }
  ],
- "patterns": []
+ "patterns": [
+  {
+   "sid": "S0001",
+   "no": 1,
+   "text": "I am a soccer fan.",
+   "note": "標準形"
+  },
+  {
+   "sid": "S0002",
+   "no": 1,
+   "text": "I can see you tomorrow morning.",
+   "note": "標準形"
+  },
+  {
+   "sid": "S0003",
+   "no": 1,
+   "text": "You will be able to swim soon.",
+   "note": "標準形"
+  },
+  {
+   "sid": "S0004",
+   "no": 1,
+   "text": "She could play the violin at five.",
+   "note": "標準形"
+  },
+  {
+   "sid": "S0005",
+   "no": 1,
+   "text": "You can enter if you have a ticket.",
+   "note": "標準形"
+  },
+  {
+   "sid": "S0006",
+   "no": 1,
+   "text": "You can't park your car here.",
+   "note": "標準形"
+  },
+  {
+   "sid": "S0007",
+   "no": 1,
+   "text": "Can I turn on the radio?",
+   "note": "標準形"
+  },
+  {
+   "sid": "S0007",
+   "no": 2,
+   "text": "Can I turn the radio on?",
+   "note": "句動詞の分離形"
+  },
+  {
+   "sid": "S0008",
+   "no": 1,
+   "text": "Can you open the window?",
+   "note": "標準形"
+  },
+  {
+   "sid": "S0009",
+   "no": 1,
+   "text": "Could you lend me the book?",
+   "note": "標準形"
+  },
+  {
+   "sid": "S0009",
+   "no": 2,
+   "text": "Could you lend the book to me?",
+   "note": "第3文型への書き換え"
+  },
+  {
+   "sid": "S0010",
+   "no": 1,
+   "text": "May I use your bathroom?",
+   "note": "標準形"
+  }
+ ]
 }
