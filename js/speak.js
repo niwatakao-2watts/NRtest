@@ -52,7 +52,8 @@ export function runSpeak(root, ctx) {
       } else if (st.self) {
         fb += `<p class="fb-sub">音声認識が使えないため、自分で判定してください。</p>`;
         actions = `<div class="pair"><button class="btn" data-act="self-ng">言えなかった</button>
-                   <button class="btn primary" data-act="self-ok">言えた</button></div>`;
+                   <button class="btn primary" data-act="self-ok">言えた</button></div>
+                   ${sttSupported() ? '<button class="btn quiet" data-act="retry-mic">マイクでもう一度試す</button>' : ''}`;
       } else {
         if (st.last && st.last.match === 'none') {
           fb += `<p class="fb-label">聞き取った文</p><p class="heard">${esc(st.last.heard)}</p>`;
@@ -133,6 +134,7 @@ export function runSpeak(root, ctx) {
       const speedBtns = SPEEDS.map(([k, l]) => `
         <button class="btn play ${st.speed === k ? 'on' : ''}" data-act="speed" data-speed="${k}"
           ${listening ? 'disabled' : ''} aria-pressed="${st.speed === k}">${ICON.speaker}<span>${l}</span></button>`).join('');
+      // ↑ 押すたびにその速さで再生する（4-1）
       root.innerHTML = `
         <section class="step" aria-label="段階2 確かめてまねる">
           <p class="stage-label"><span class="dot done"></span><span class="dot on"></span>確かめてまねる</p>
@@ -142,10 +144,8 @@ export function runSpeak(root, ctx) {
           </div>
           <div class="feedback" aria-live="polite">${fb}</div>
           <div class="actions">
-            <div class="plays" role="group" aria-label="お手本を聞く">${speedBtns}
-              <button class="btn play ja-play" data-act="play-ja" ${listening ? 'disabled' : ''} aria-label="日本語を聞く">${ICON.speaker}<span>日本語</span></button>
-            </div>
-            ${st.self ? '' : `<button class="btn mic ${listening ? 'live' : ''}" data-act="${listening ? 'stop' : 'check'}">${ICON.mic}<span>${esc(listening ? st.listenLabel : '言って確かめる')}</span></button>`}
+            <div class="plays" role="group" aria-label="お手本を聞く">${speedBtns}</div>
+            ${sttSupported() ? `<button class="btn mic ${listening ? 'live' : ''}" data-act="${listening ? 'stop' : 'check'}">${ICON.mic}<span>${esc(listening ? st.listenLabel : '言って確かめる')}</span></button>` : ''}
             <div class="pair">
               <button class="btn" data-act="later" ${listening ? 'disabled' : ''}>またあとで</button>
               <button class="btn strong-outline" data-act="done" ${listening ? 'disabled' : ''}>できた</button>
@@ -189,6 +189,7 @@ export function runSpeak(root, ctx) {
       if (act === 'play-ja') voice.play(S, 'ja');
       else if (act === 'play-en') voice.play(S, 'en', st.speed);
       else if (act === 'say') say();
+      else if (act === 'retry-mic') { st.self = false; st.note = ''; say(); }
       else if (act === 'check') check();
       else if (act === 'stop') st.listening && st.listening.stop();
       else if (act === 'giveup') { voice.stop(); ctx.log({ type: 's1-giveup', attempts: st.attempts }); st.note = ''; stage2(); }
