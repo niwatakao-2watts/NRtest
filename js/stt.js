@@ -9,6 +9,7 @@ export const sttSupported = () => !!SR;
 
 const RESTART_GAP = 400;      // やり直しの間隔。短いと端末の開始音と終了音が重なって濁った音になる
 const RESTART_MAX = 3;        // やり直しの回数の上限（音が何度も鳴るのを防ぐ）
+const SHORT_MS = 1000;        // これより短く終わった空振りは、やり直しの回数に数えない
 
 export class Listener {
   constructor({ target, waitLimit = 8000, pauseWindow = 5000, hardCap = 30000,
@@ -20,14 +21,15 @@ export class Listener {
   start() {
     return new Promise(resolve => {
       const s = this.s = {
-        t0: performance.now(), readyAt: 0, speechAt: 0, lastHeardAt: 0, restarts: 0,
+        t0: performance.now(), readyAt: 0, speechAt: 0, heardAt: 0, lastHeardAt: 0, restarts: 0,
         finals: [], interim: '', lastError: '', userStopped: false, done: false, rec: null,
+        launchedAt: performance.now(), shortStops: 0,
       };
       // 「準備中」→「どうぞ」→「聞いています」。マイクが実際に開くまで 0.3〜1秒かかるため、
       // 準備ができるまで話し始めないように伝える（まとめ 8-4）
       s.ticker = setInterval(() => {
         const sec = Math.floor((performance.now() - (s.readyAt || s.t0)) / 1000);
-        this.onState(!s.readyAt ? 'preparing' : s.speechAt ? 'hearing' : 'waiting', sec);
+        this.onState(!s.readyAt ? 'preparing' : s.heardAt ? 'hearing' : 'waiting', sec);
       }, 250);
       s.cap = setTimeout(() => this.stop(), this.hardCap);
 
@@ -51,6 +53,7 @@ export class Listener {
           readyMs: s.readyAt ? Math.round(s.readyAt - s.t0) : null,
           waitMs: s.speechAt ? Math.round(s.speechAt - (s.readyAt || s.t0)) : null,
           restarts: s.restarts,
+          shortStops: s.shortStops,
           totalMs: Math.round(performance.now() - s.t0),
         });
       };
@@ -91,6 +94,7 @@ export class Listener {
             }
           }
           if (!s.speechAt) s.speechAt = performance.now();
+          if (!s.heardAt) s.heardAt = performance.now();     // 言葉が取れた＝「聞いています」（B）
           s.lastHeardAt = performance.now();
         };
         r.onerror = e => { if (mine()) s.lastError = e.error; };
@@ -104,7 +108,10 @@ export class Listener {
           const canRestart = !s.userStopped && s.restarts < RESTART_MAX;
           // 話し始める前に切れた：待ち時間の上限まで作り直す
           if (!heard && canRestart && now - (s.readyAt || s.t0) < this.waitLimit) {
-            s.restarts++; s.lastError = '';
+            // 1秒未満で空振りに終わった回（息や物音で始まってすぐ切れた場合）は回数に数えない（C）
+            if (now - s.launchedAt >= SHORT_MS) s.restarts++;
+            s.shortStops += now - s.launchedAt < SHORT_MS ? 1 : 0;
+            s.lastError = '';
             return setTimeout(launch, RESTART_GAP);
           }
           // 語数が足りない：続きを待って作り直す
@@ -115,6 +122,7 @@ export class Listener {
           finish();
         };
         s.rec = r;
+        s.launchedAt = performance.now();
         try { r.start(); }
         catch (e) { s.lastError = 'start-failed'; finish(); }
       };
