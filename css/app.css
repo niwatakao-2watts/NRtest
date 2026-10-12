@@ -297,6 +297,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .menu-label small { font-weight: 500; margin-left: 4px; letter-spacing: 0; }
 .sub-btn { min-height: 60px; gap: 10px; font-size: 1rem; }
 .sub-btn svg { width: 24px; height: 24px; flex: none; color: var(--accent); }
+.sub-btn small { margin-left: 10px; font-size: .8rem; font-weight: 500; color: var(--muted); }
 .sub-btn .s { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .notice {
   font-size: .9rem; color: var(--muted); background: var(--card);
@@ -332,3 +333,22 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
   .btn.mic.live, .opt.dead, .w.miss, .tile.miss, .caret { animation: none; }
 }
+
+/* ============ 特訓：番号の範囲を選ぶ（11章） ============ */
+.drill label { display: block; font-size: .85rem; font-weight: 700; color: var(--muted); margin: 18px 0 8px; letter-spacing: .06em; }
+.stepper {
+  display: flex; align-items: stretch; gap: 8px;
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 16px; padding: 8px;
+}
+.step-btn {
+  flex: none; min-width: 56px; min-height: 60px; border-radius: 12px; border: 0;
+  background: var(--accent-soft); color: var(--accent); font-size: 1.3rem; font-weight: 700;
+}
+.step-btn:active { transform: scale(.95); }
+.step-val { flex: 1; min-width: 0; margin: 0; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+.step-val b { font-size: 1.3rem; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.step-val small { font-size: .78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drill-count { margin: 22px 0 0; text-align: center; color: var(--muted); }
+.drill-count b { font-size: 1.6rem; color: var(--accent); margin-right: 4px; font-variant-numeric: tabular-nums; }
+.drill .btn.primary svg { width: 26px; height: 26px; }
+.drill .btn.primary .s { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

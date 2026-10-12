@@ -1,6 +1,7 @@
 // 画面の進行：ホーム・今日の学習・自由に練習・結果・記録・設定
 //   今日の学習 … 段方式のスケジュール（まとめ 2-1・2-2）に沿って出題し、段と次の出題日を更新する
 //   自由に練習 … 10文を全部出す。段は変えない（3章の追加学習の簡易版）
+//   特訓       … 番号の範囲を選び、暗唱と語順並べ替えで練習する。段は変えない（11章）
 import { loadData } from './data.js';
 import { Voice } from './audio.js';
 import { runSpeak } from './speak.js';
@@ -27,7 +28,7 @@ const FIRST_LABEL = { ok: '一発OK', ok_yure: '一発OK（ゆれ）', retry_ok:
 const FIRST_CLASS = { ok: 'ok', ok_yure: 'near', retry_ok: 'mid', ng: 'ng' };
 const MASTERY_CLASS = { perfect: 'ok', good: 'ok', close: 'mid', again: 'ng' };
 const STEP_LABEL = { meaning: '単語の意味', structureA: '文のかたち', structureB: '意味の取り方', cloze: '空欄', order: '語順' };
-const KIND_LABEL = { daily: '今日の学習', full: '自由に練習（全ステップ）', speak: '自由に練習（暗唱だけ）' };
+const KIND_LABEL = { daily: '今日の学習', full: '自由に練習（全ステップ）', speak: '自由に練習（暗唱だけ）', drill: '特訓' };
 
 // 画面のすみのボタンはアイコンにする（13-7）。読み上げ用の名前は aria-label で持つ
 const ICON = {
@@ -39,6 +40,7 @@ const ICON = {
   play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="s" d="M8 5.5l10 6.5-10 6.5z"/></svg>',
   mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="s" x="9" y="3" width="6" height="11" rx="3"/><path class="s" d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6"/></svg>',
   steps: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="s" d="M5 7h14M5 12h14M5 17h9"/></svg>',
+  drill: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="s" cx="12" cy="12" r="8.4"/><circle class="s" cx="12" cy="12" r="3.6"/></svg>',
 };
 const iconBtn = (act, name, kind = act) =>
   `<button class="icon-btn" data-act="${act}" aria-label="${name}" title="${name}">${ICON[kind]}</button>`;
@@ -104,6 +106,7 @@ async function home() {
         <button class="btn sub-btn" data-act="start-full">${ICON.steps}<span>全ステップ</span></button>
         <button class="btn sub-btn" data-act="start-speak">${ICON.mic}<span>暗唱だけ</span></button>
       </div>
+      <button class="btn sub-btn" data-act="drill">${ICON.drill}<span>特訓<small>番号を選んで、暗唱と語順</small></span></button>
       ${DAY_OFFSET ? `<p class="notice">確認用：${DAY_OFFSET}日後（${today()}）として動いています。</p>` : ''}
       ${sttSupported() ? '' : '<p class="notice">この端末のブラウザは音声認識に対応していません。自分で判定する形で進みます。</p>'}
       ${files ? '' : '<p class="notice">音声ファイルがまだ置かれていないため、ブラウザの読み上げで代用しています。</p>'}
@@ -118,9 +121,58 @@ async function home() {
     }
     if (act === 'start-full') session(ids.map(sid => ({ sid })), 'full', cards);
     if (act === 'start-speak') session(ids.map(sid => ({ sid })), 'speak', cards);
+    if (act === 'drill') drillView(cards);
     if (act === 'settings') settingsView();
     if (act === 'records') records();
   };
+}
+
+// ---------------- 特訓：番号の範囲を選ぶ（11章） ----------------
+function drillView(cards) {
+  const all = data.sentences;
+  const last = all.length - 1;
+  const clamp = n => Math.max(0, Math.min(last, n));
+  // 前回選んだ範囲を覚えておく（文IDで持つ。文が増えても位置がずれないように）
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('eigo-drill') || '{}'); } catch (e) { /* 無視 */ }
+  const at = id => all.findIndex(x => x.id === id);
+  let from = at(saved.from) >= 0 ? at(saved.from) : 0;
+  let to = at(saved.to) >= 0 ? at(saved.to) : last;
+  const big = all.length > 20;          // 文が多いときは、10ずつ動かすボタンも出す
+
+  const stepper = (key, n) => `
+    <div class="stepper" role="group">
+      ${big ? `<button class="step-btn" data-move="${key}" data-by="-10" aria-label="10もどす">−10</button>` : ''}
+      <button class="step-btn" data-move="${key}" data-by="-1" aria-label="1もどす">−</button>
+      <p class="step-val" data-val="${key}"><b>${esc(all[n].id)}</b><small>${esc(all[n].ja)}</small></p>
+      <button class="step-btn" data-move="${key}" data-by="1" aria-label="1すすめる">＋</button>
+      ${big ? `<button class="step-btn" data-move="${key}" data-by="10" aria-label="10すすめる">＋10</button>` : ''}
+    </div>`;
+
+  const draw = () => {
+    app.innerHTML = `
+      <header class="top">${iconBtn('back', '戻る')}<h1>特訓</h1><span></span></header>
+      <main class="drill">
+        <label>何番から</label>${stepper('from', from)}
+        <label>何番まで</label>${stepper('to', to)}
+        <p class="drill-count"><b>${to - from + 1}</b>文を、暗唱と語順で練習します</p>
+        <div class="actions"><button class="btn primary big" data-act="go">${ICON.play}<span>はじめる</span></button></div>
+      </main>`;
+  };
+  app.onclick = e => {
+    const b = e.target.closest('[data-move],[data-act]'); if (!b) return;
+    if (b.dataset.act === 'back') return home();
+    if (b.dataset.act === 'go') {
+      try { localStorage.setItem('eigo-drill', JSON.stringify({ from: all[from].id, to: all[to].id })); } catch (err) { /* 無視 */ }
+      return session(all.slice(from, to + 1).map(x => ({ sid: x.id })), 'drill', cards);
+    }
+    // 「から」が「まで」を追い越したら、もう一方も一緒に動かす
+    const by = Number(b.dataset.by);
+    if (b.dataset.move === 'from') { from = clamp(from + by); if (from > to) to = from; }
+    else { to = clamp(to + by); if (to < from) from = to; }
+    draw();
+  };
+  draw();
 }
 
 // ---------------- 設定（本人が変えられるもの。まとめ 10-1） ----------------
@@ -161,8 +213,12 @@ async function session(list, kind, cards) {
   const day = today();
   const daily = kind === 'daily';
   const ss = { id, startedAt: id, kind, mode: kind === 'speak' ? 'speak' : 'full', day, items: {}, done: false };
+  if (kind === 'drill') ss.range = { from: list[0].sid, to: list[list.length - 1].sid };
+  // 特訓は、再出題のときも含めて毎回「暗唱＋語順並べ替え」（11章）
+  const drillSteps = sid => stepsOf(sid).includes('order') ? ['order'] : [];
   // 最初に行うステップ。今日の学習では段で決まる（段3以上は、段階1の結果を見てから決める）
-  const firstSteps = x => daily ? stepsFor(x.stage, stepsOf(x.sid)) : (kind === 'full' ? stepsOf(x.sid) : []);
+  const firstSteps = x => daily ? stepsFor(x.stage, stepsOf(x.sid))
+    : kind === 'full' ? stepsOf(x.sid) : kind === 'drill' ? drillSteps(x.sid) : [];
   const queue = list.map(x => ({ sid: x.sid, appearance: 1, stage: daily ? x.stage : null, steps: firstSteps(x) }));
   let stop = false, quit;
   const quitted = new Promise(r => { quit = r; });     // 中断したときに、待っている画面を終わらせる
@@ -236,7 +292,7 @@ async function session(list, kind, cards) {
       const next = item.appearance + 1;
       // 4回目以降は暗唱を中心にし、まだ言えない文には語順並べ替えだけを添える（2-3）
       const nextSteps = kind === 'speak' ? []
-        : next >= LATE_FROM ? (stepsOf(S.id).includes('order') ? ['order'] : [])
+        : kind === 'drill' || next >= LATE_FROM ? drillSteps(S.id)
         : wrongSteps;
       queue.splice(Math.min(REQUEUE_GAP, queue.length), 0, { sid: S.id, appearance: next, stage: item.stage, steps: nextSteps });
     }
@@ -328,7 +384,7 @@ async function records() {
       ${sessions.length ? '' : '<p class="notice">まだ記録がありません。</p>'}
       <ol class="slist">
         ${sessions.map(ss => `<li><span class="sid">${when(ss.startedAt)}</span>
-          <span class="sja">${Object.keys(ss.items || {}).length}文　${KIND_LABEL[ss.kind || ss.mode] || '自由に練習'}${ss.done ? '' : '（中断）'}</span>
+          <span class="sja">${Object.keys(ss.items || {}).length}文　${KIND_LABEL[ss.kind || ss.mode] || '自由に練習'}${ss.range ? `（${esc(ss.range.from)}〜${esc(ss.range.to)}）` : ''}${ss.done ? '' : '（中断）'}</span>
           <span class="rep"><button class="icon-btn inline" data-csv="${esc(ss.id)}" aria-label="CSVで保存" title="CSVで保存">${ICON.save}</button></span></li>`).join('')}
       </ol>
     </main>`;
