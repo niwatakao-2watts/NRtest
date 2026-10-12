@@ -164,6 +164,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .feedback p { margin: 0 0 6px; }
 .fb-big { font-size: 1.15rem; font-weight: 700; }
 .fb-sub, .fb-note { font-size: .9rem; color: var(--muted); }
+.fb-sub.center { text-align: center; }
 .fb-label { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: .06em; margin: 10px 0 6px !important; }
 .diff { margin: 4px 0 8px; padding: 10px 14px 10px 2em; color: var(--ng); background: var(--ng-soft); border-radius: 12px; font-weight: 600; }
 
@@ -286,6 +287,17 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .menu-btn .s { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .menu-btn b { display: block; font-size: 1.25rem; font-weight: 700; line-height: 1.4; }
 .menu-btn small { display: block; font-size: .85rem; font-weight: 500; opacity: .8; }
+/* 今日の分が終わったときの表示（押せない。ボタンと同じ大きさで、状態だけを伝える） */
+.menu-btn.done { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.menu-btn.done small { color: var(--text); }
+.menu-btn.done svg { color: var(--ok); }             /* 完了の印は、正解と同じ緑 */
+.menu-btn.done:active { transform: none; }
+/* 自由に練習（主役の下に、小さめに置く） */
+.menu-label { margin: 14px 0 0; font-size: .85rem; font-weight: 700; color: var(--muted); letter-spacing: .06em; }
+.menu-label small { font-weight: 500; margin-left: 4px; letter-spacing: 0; }
+.sub-btn { min-height: 60px; gap: 10px; font-size: 1rem; }
+.sub-btn svg { width: 24px; height: 24px; flex: none; color: var(--accent); }
+.sub-btn .s { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .notice {
   font-size: .9rem; color: var(--muted); background: var(--card);
   border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; margin: 0;
@@ -311,7 +323,10 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .badge.near { color: var(--near); background: var(--near-soft); }
 .badge.mid { color: var(--mid); background: var(--mid-soft); }
 .badge.ng { color: var(--ng); background: var(--ng-soft); }
+.badges { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.badge.stage { color: var(--accent); background: var(--accent-soft); }
 .rep { font-size: .78rem; color: var(--muted); }
+.section-title { font-size: .85rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; margin: 16px 0 0; }
 .settings label { display: block; font-size: .8rem; font-weight: 600; color: var(--muted); margin: 18px 0 8px; letter-spacing: .06em; }
 
 @media (prefers-reduced-motion: reduce) {

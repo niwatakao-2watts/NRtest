@@ -15,7 +15,8 @@ const ICON = {
 const SPEEDS = [['slow', 'ゆっくり'], ['normal', 'ふつう'], ['fast', 'はやい']];   // 遅い順に並べる
 
 /**
- * ctx: { sentence, voice, settings, mishear, extraAnswers, retryLimit, log(ev) }
+ * ctx: { sentence, voice, settings, mishear, extraAnswers, retryLimit, log(ev), quickOk }
+ *   quickOk … 段3以上で使う。一発OK（ゆれなし）なら段階2を省き、英語を1回流して次へ進む（まとめ 2-1）
  * 戻り値: { first: 'ok'|'ok_yure'|'retry_ok'|'ng', again, attempts, checks, self }
  */
 export function runSpeak(root, ctx) {
@@ -52,7 +53,8 @@ export function runSpeak(root, ctx) {
         if (st.last && st.last.match === 'extra') sub = `${st.last.extra.where === 'head' ? '先頭' : '最後'}に「${esc(st.last.extra.word)}」が入って聞こえましたが、文は言えています`;
         fb += `<div class="result ${one ? 'ok' : 'mid'}">${MARK}<p class="fb-big">${one ? '一発OK' : '言えました'}</p>
                  ${sub ? `<p class="fb-sub">${sub}</p>` : ''}</div>`;
-        actions = `<button class="btn primary" data-act="to2">お手本で確かめる</button>`;
+        actions = st.quick ? '<p class="fb-sub center">次の文へ進みます</p>'
+          : `<button class="btn primary" data-act="to2">お手本で確かめる</button>`;
       } else if (st.self) {
         fb += `<p class="fb-sub">音声認識が使えないため、自分で判定してください。</p>`;
         actions = `<div class="pair"><button class="btn" data-act="self-ng">言えなかった</button>
@@ -96,6 +98,15 @@ export function runSpeak(root, ctx) {
       },
     });
 
+    // 段3以上で一発OK（ゆれなし）：段階2を省き、英語を1回聞いて次の文へ（2-1）
+    const quickFinish = async () => {
+      st.quick = true;
+      stage1();
+      await voice.play(S, 'en', st.speed);
+      await new Promise(r => setTimeout(r, 500));
+      if (st.quick) finish(false);
+    };
+
     const say = async () => {
       voice.stop();
       st.note = '';
@@ -125,6 +136,7 @@ export function runSpeak(root, ctx) {
         st.solved = true;
         if (!st.first) st.first = 'retry_ok';
         chime(settings);
+        if (ctx.quickOk && st.first === 'ok') return quickFinish();
         voice.play(S, 'en', st.speed);          // 答え合わせとして英語を1回流す
         return stage1();
       }
@@ -216,7 +228,9 @@ export function runSpeak(root, ctx) {
       else if (act === 'self-ok') {
         st.attempts++; st.first = st.first || 'ok'; st.solved = true;
         ctx.log({ type: 's1', attempt: st.attempts, match: 'self-ok' });
-        chime(settings); voice.play(S, 'en', st.speed); stage1();
+        chime(settings);
+        if (ctx.quickOk && st.first === 'ok') quickFinish();
+        else { voice.play(S, 'en', st.speed); stage1(); }
       } else if (act === 'self-ng') {
         st.attempts++; st.first = st.first || 'ng';
         ctx.log({ type: 's1', attempt: st.attempts, match: 'self-ng' });
