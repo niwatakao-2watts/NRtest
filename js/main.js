@@ -7,8 +7,9 @@ import { sttSupported } from './stt.js';
 import { addEvent, putSession, allSessions, eventsOf } from './db.js';
 
 const RETRY_LIMIT = 5;      // 段階1のやり直し上限（まとめ 10-2）
-const REQUEUE_LIMIT = 15;   // セッション内反復の上限（2-3）
+const REQUEUE_LIMIT = 6;    // セッション内反復の上限（2-3）
 const REQUEUE_GAP = 3;      // 再出題までに挟む文の数（2-3：直後に連続させない）
+const LATE_FROM = 4;        // 4回目以降は、暗唱と語順並べ替えだけにする（2-3）
 
 const DEFAULTS = { voice: 'male', speed: 'normal', autoJa: true, echo: true, sound: true, haptics: true, theme: 'light', size: 'l' };
 const loadSettings = () => { try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('eigo-settings') || '{}') }; } catch (e) { return { ...DEFAULTS }; } };
@@ -125,9 +126,18 @@ async function session(ids, mode) {
   let stop = false, quit;
   const quitted = new Promise(r => { quit = r; });     // 中断したときに、待っている画面を終わらせる
 
+  let lastSid = null;
   while (queue.length && !stop) {
     const item = queue.shift();
     const S = data.byId[item.sid];
+    // 他に出す文がなく、同じ文が続くときは、ひと息の画面を挟む（2-3：直後の反復を避ける）
+    if (item.sid === lastSid) {
+      const go = await Promise.race([quitted, breather(() => {
+        if (confirm('中断してホームに戻りますか？ここまでの記録は残ります。')) { stop = true; voice.stop(); quit(null); home(); }
+      })]);
+      if (stop || !go) break;
+    }
+    lastSid = item.sid;
     const rest = new Set([item.sid, ...queue.map(q => q.sid)]).size;
     app.innerHTML = `
       <header class="top">${iconBtn('quit', '中断する')}
@@ -161,7 +171,12 @@ async function session(ids, mode) {
     if (item.appearance > 1 && oneShot && !wrongSteps.length) it.oneShotLater = true;
     // 一発OKでなかった文・「またあとで」の文・誤答したステップがある文は、他の文を挟んでもう一度（まとめ 2-3）
     if ((!oneShot || res.again || wrongSteps.length) && item.appearance < REQUEUE_LIMIT) {
-      queue.splice(Math.min(REQUEUE_GAP, queue.length), 0, { sid: S.id, appearance: item.appearance + 1, steps: wrongSteps });
+      const next = item.appearance + 1;
+      // 4回目以降は暗唱を中心にし、まだ言えない文には語順並べ替えだけを添える（2-3）
+      const steps = mode !== 'full' ? []
+        : next >= LATE_FROM ? (stepsOf(S.id).includes('order') ? ['order'] : [])
+        : wrongSteps;
+      queue.splice(Math.min(REQUEUE_GAP, queue.length), 0, { sid: S.id, appearance: next, steps });
     }
     await putSession(ss);
   }
@@ -169,6 +184,22 @@ async function session(ids, mode) {
   ss.done = true; ss.endedAt = new Date().toISOString();
   await putSession(ss);
   summary(ss);
+}
+
+/** 同じ文が続くときのひと息（押すまで進まない） */
+function breather(onQuit) {
+  return new Promise(resolve => {
+    app.innerHTML = `
+      <header class="top">${iconBtn('quit', '中断する')}<h1>ひと息</h1><span></span></header>
+      <main class="home menu">
+        <p class="notice">同じ文をもう一度出します。すこし間をおいてから、思い出して言ってみましょう。</p>
+        <button class="btn primary big" data-act="go">つづける</button>
+      </main>`;
+    app.onclick = e => {
+      if (e.target.closest('[data-act="go"]')) resolve(true);
+      if (e.target.closest('[data-act="quit"]')) onQuit();
+    };
+  });
 }
 
 // ---------------- 結果 ----------------

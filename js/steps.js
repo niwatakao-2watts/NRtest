@@ -108,7 +108,7 @@ export function runStructureA(root, ctx) {
     }).filter(Boolean).sort((a, b) => a.order - b.order);
     if (!groups.length) return resolve({ wrong: 0 });
 
-    let qi = 0, wrong = 0, note = '';
+    let qi = 0, wrong = 0, note = '', busy = false;   // busy：正解のあとの短い間。この間のタップは受け付けない
     const solved = new Map();          // 語順番号 → ラベル（色を残すため）
     const missed = new Set();          // この問いで一度誤答した語（2回目は数えない）
 
@@ -129,13 +129,17 @@ export function runStructureA(root, ctx) {
     };
 
     const tap = async no => {
+      // 正解のあとの間や、すべて終わったあとのタップは数えない（続けて押したときに誤答扱いにしないため）
+      if (busy || qi >= groups.length) return;
       const q = groups[qi];
       const row = rows.find(r => r.no === no);
       if (q.nos.includes(no)) {
         for (const n of q.nos) solved.set(n, q.label);
         note = ''; missed.clear(); draw(); chime(settings);
         ctx.log({ type: 'structureA', label: q.label, wrong });
+        busy = true;
         await wait(NEXT_MS);
+        busy = false;
         if (++qi < groups.length) return draw();
         return resolve({ wrong });
       }
@@ -144,7 +148,7 @@ export function runStructureA(root, ctx) {
       note = row && row.label ? `そこは「${row.label}」のはたらきです` : 'この文の骨組みになる語を探しましょう';
       draw(no);
       await wait(400);
-      draw();                                              // 誤答の表示は元に戻す（13-9）
+      if (qi < groups.length) draw();                      // 誤答の表示は元に戻す（13-9）
     };
 
     root.onclick = e => {
