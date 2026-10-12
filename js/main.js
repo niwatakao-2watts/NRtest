@@ -99,7 +99,7 @@ function settingsView() {
     <header class="top">${iconBtn('back', '戻る')}<h1>設定</h1><span></span></header>
     <main class="settings">
       <label>声</label>${opt('voice', [['male', '男性'], ['female', '女性']])}
-      <label>英語の速さ</label>${opt('speed', [['normal', 'ふつう'], ['slow', 'ゆっくり'], ['fast', 'はやい']])}
+      <label>英語の速さ</label>${opt('speed', [['slow', 'ゆっくり'], ['normal', 'ふつう'], ['fast', 'はやい']])}
       <label>日本語の自動読み上げ</label>${opt('autoJa', onoff)}
       <label>正解したあとに英文を読む</label>${opt('echo', onoff)}
       <label>効果音</label>${opt('sound', onoff)}
@@ -212,9 +212,9 @@ function summary(ss) {
     <header class="top"><span></span><h1>おつかれさま</h1><span></span></header>
     <main class="summary">
       <div class="stats">
-        <div><b>${count('ok') + count('ok_yure')}</b><span>一発OK</span></div>
-        <div><b>${count('retry_ok')}</b><span>やり直して</span></div>
-        <div><b>${count('ng')}</b><span>言えなかった</span></div>
+        <div class="ok"><b>${count('ok') + count('ok_yure')}</b><span>一発OK</span></div>
+        <div class="mid"><b>${count('retry_ok')}</b><span>やり直して</span></div>
+        <div class="ng"><b>${count('ng')}</b><span>言えなかった</span></div>
       </div>
       <ol class="slist">
         ${items.map(([sid, it]) => `<li><span class="sid">${sid}</span><span class="sja">${esc(data.byId[sid].en)}</span>

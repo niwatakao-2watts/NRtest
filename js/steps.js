@@ -1,6 +1,9 @@
 // M2：意味理解（4-2）・構造把握（4-3）・空欄補充（4-4）・語順並べ替え（4-5）
 // どのステップも、正解したら自動で次へ進み、誤答は控えめに知らせる（13-5・13-9）。
 // 戻り値は { wrong } で、wrong は誤答の回数（意味理解は 4-2 の正規化ルールにより 0 か 1）。
+//
+// 画面の作り（13-3）：問いは上、押すものは下。片手で持ったとき親指が届く位置に選択肢を置く。
+// 正解したときに画面が動かないよう、あとから出る表示の場所はあらかじめ空けておく。
 import { chime } from './audio.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -9,30 +12,40 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 const NEXT_MS = 260;              // 誤答のあとなど、軽い間（13-8：0.2秒程度）
 const SHOW_MS = 1200;             // 正解を見せてから次へ進むまで（正解の内容を印象づけるため）
 
+/** 正解の印（太い丸）。文字の「○」は線が細く目立たないため、図形で描く */
+export const MARK = '<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/></svg>';
+
 /** 誤答の知らせ方（13-5：音は鳴らさない。13-10：振動は短く2回） */
 function buzz(settings) {
   if (settings.haptics && navigator.vibrate) navigator.vibrate([20, 60, 20]);
 }
 
-/** 画面の枠。上部にステップ名、中央に内容、下部に操作（13-3） */
-function frame(root, { name, pos, body, actions = '' }) {
+/**
+ * 画面の枠。top：問い（上）、bottom：押すもの（下に寄せる）、actions：いちばん下の操作
+ * center を true にすると、top を画面の中ほどに置く（文のかたち用）
+ */
+function frame(root, { name, pos, top = '', bottom = '', actions = '', center = false }) {
   root.innerHTML = `
     <section class="step" aria-label="${esc(name)}">
       <p class="stage-label"><span class="dot on"></span>${esc(name)}${pos ? `　${esc(pos)}` : ''}</p>
-      <div class="qbody">${body}</div>
-      <div class="actions">${actions}</div>
+      <div class="qtop ${center ? 'center' : ''}">${top}</div>
+      ${bottom ? `<div class="qbottom">${bottom}</div>` : ''}
+      ${actions ? `<div class="actions">${actions}</div>` : ''}
     </section>`;
 }
 
 /**
  * 4択（意味理解・構造把握B・空欄補充で共通）。
  * 誤答はグレーのまま残し（13-9）、正解したら正解だけをはっきり見せて、他は薄くする。
+ * en：英語の選択肢（英文と同じ書体にする）
  */
-function choices(opts, dead, correct) {
+function choices(opts, dead, correct, { en = false } = {}) {
   const solved = correct >= 0;
+  const note = dead.size && !solved ? 'ちがいます。残りから選びましょう' : '';
   return `<ul class="opts">${opts.map((o, i) => `
-    <li><button class="opt ${dead.has(i) ? 'dead' : ''} ${correct === i ? 'hit' : ''} ${solved && correct !== i ? 'fade' : ''}"
-        data-opt="${i}" ${dead.has(i) || solved ? 'disabled' : ''}>${correct === i ? '<span class="mark">○</span>' : ''}${esc(o)}</button></li>`).join('')}</ul>`;
+    <li><button class="opt ${en ? 'en' : ''} ${dead.has(i) ? 'dead' : ''} ${correct === i ? 'hit' : ''} ${solved && correct !== i ? 'fade' : ''}"
+        data-opt="${i}" ${dead.has(i) || solved ? 'disabled' : ''}>${correct === i ? MARK : ''}<span>${esc(o)}</span></button></li>`).join('')}</ul>
+    <p class="qnote">${note}</p>`;
 }
 
 /**
@@ -55,16 +68,16 @@ export function runMeaning(root, ctx) {
 
     const draw = () => {
       const w = words[i];
+      const solved = hit >= 0;
       frame(root, {
         name: '単語の意味', pos: `${i + 1}/${words.length}`,
-        body: `
-          <div class="wordcard ${hit >= 0 ? 'solved' : ''}">
-            <p class="wordhead">${hit >= 0 ? '<span class="mark big">○</span>' : ''}<button class="word-play" data-act="play-word">${esc(w.word)}</button></p>
+        top: `
+          <div class="wordcard ${solved ? 'solved' : ''}">
+            <p class="wordhead"><button class="word-play" data-act="play-word">${esc(w.word)}</button></p>
             <p class="wordsub">${esc(w.pos || '')}${w.ipa ? `　<span class="ipa">${esc(w.ipa)}</span>` : ''}</p>
-            ${hit >= 0 ? `<p class="answer">${esc(w.meaning)}</p>` : ''}
-          </div>
-          ${choices(opts, dead, hit)}
-          <p class="fb-sub">${dead.size && hit < 0 ? 'ちがいます。残りから選びましょう' : ''}</p>`,
+            <p class="answer-slot">${solved ? `<span class="answer">${MARK}${esc(w.meaning)}</span>` : ''}</p>
+          </div>`,
+        bottom: choices(opts, dead, hit),
       });
     };
 
@@ -118,13 +131,13 @@ export function runStructureA(root, ctx) {
         const lab = solved.get(r.no);
         const cls = ['w', lab ? `on e-${ELEM_KEY[lab]}` : '', flash === r.no ? 'miss' : ''].join(' ');
         return `<button class="${cls}" data-no="${r.no}">${esc(r.word)}</button>`;
-      }).join(' ');
+      }).join('');
       frame(root, {
-        name: '文のかたち', pos: `${qi + 1}/${groups.length}`,
-        body: `
-          <p class="ask"><span class="e-${ELEM_KEY[q.label]} tag">${esc(q.label)}</span>の中心の語をタップしてください</p>
+        name: '文のかたち', pos: `${qi + 1}/${groups.length}`, center: true,
+        top: `
+          <p class="ask"><span class="e-${ELEM_KEY[q.label]} tag">${esc(q.label)}</span><span>をタップ</span></p>
           <p class="wordline">${sentence}</p>
-          <p class="fb-sub">${esc(note)}</p>`,
+          <p class="qnote">${esc(note)}</p>`,
       });
     };
 
@@ -171,13 +184,10 @@ export function runStructureB(root, ctx) {
     const dead = new Set();
     const draw = () => frame(root, {
       name: '意味の取り方',
-      body: `
+      top: `
         <p class="en big">${esc(S.en)}</p>
-        ${hit >= 0
-          ? `<p class="answer lead"><span class="mark big">○</span>${esc(choice.correct)}</p>`
-          : '<p class="fb-label">合っている日本語訳はどれですか</p>'}
-        ${choices(opts, dead, hit)}
-        <p class="fb-sub">${dead.size && hit < 0 ? 'ちがいます。残りから選びましょう' : ''}</p>`,
+        <p class="fb-label">合っている日本語訳はどれですか</p>`,
+      bottom: choices(opts, dead, hit),
     });
 
     root.onclick = async e => {
@@ -206,17 +216,16 @@ export function runCloze(root, ctx) {
     const opts = shuffle([cloze.answer, cloze.dummy1, cloze.dummy2, cloze.dummy3]);
     let wrong = 0, hit = -1, done = false;
     const dead = new Set();
+    // 空欄の幅は一定にする（正解の語の長さに合わせると、長さがヒントになってしまうため）
     const line = fill => orderWords.map(w => w.no === cloze.blankNo
-      ? `<span class="blank ${fill ? 'filled' : ''}">${esc(fill ? cloze.answer : '　　　')}</span>` : esc(w.word)).join(' ');
+      ? `<span class="blank ${fill ? 'filled' : ''}">${fill ? esc(cloze.answer) : '&nbsp;'}</span>` : esc(w.word)).join(' ');
 
     const draw = () => frame(root, {
       name: '空欄をうめる',
-      body: `
+      top: `
         <p class="en big">${line(done)}${esc(tailMark(S.en))}</p>
-        <p class="ja small">${esc(S.ja)}</p>
-        ${done ? `<p class="answer lead"><span class="mark big">○</span>${esc(cloze.answer)}</p>` : ''}
-        ${choices(opts, dead, hit)}
-        <p class="fb-sub">${dead.size && hit < 0 ? 'ちがいます。残りから選びましょう' : ''}</p>`,
+        <p class="ja small">${esc(S.ja)}</p>`,
+      bottom: choices(opts, dead, hit, { en: true }),
     });
 
     root.onclick = async e => {
@@ -249,25 +258,28 @@ export function runOrder(root, ctx) {
     const used = new Set();
     const missed = new Set();          // この位置で一度誤答したタイル（2回目は数えない）
 
-    const draw = (flash = -1) => {
-      const built = main.slice(0, at).map(w => w.word).join(' ');
-      frame(root, {
-        name: '語をならべる',
-        body: `
-          <p class="ja small">${esc(S.ja)}</p>
-          <p class="built ${done ? 'solved' : ''}">${done ? '<span class="mark">○</span>' : ''}${esc(built)}${done ? esc(tailMark(S.en)) : '<span class="caret"></span>'}</p>
-          <div class="tiles">${tiles.map(t => `
-            <button class="tile ${used.has(t.key) ? 'used' : ''} ${flash === t.key ? 'miss' : ''}"
-              data-key="${t.key}" ${used.has(t.key) ? 'disabled' : ''}>${esc(show(t.word, t))}</button>`).join('')}</div>
-          <p class="fb-sub">${esc(note)}</p>`,
-        actions: done ? '' : '<button class="btn quiet" data-act="reset">最初からやり直す</button>',
-      });
-    };
-
     // 文の先頭の語も小文字で見せる（大文字が先頭のヒントになるため。4-5）
     const show = word => (word === 'I' || word.startsWith('I\'')) ? word
       : word[0] === word[0].toUpperCase() && word.slice(1) === word.slice(1).toLowerCase()
         ? word[0].toLowerCase() + word.slice(1) : word;
+
+    const draw = (flash = -1) => {
+      const built = main.slice(0, at).map(w => w.word).join(' ');
+      frame(root, {
+        name: '語をならべる',
+        top: `
+          <p class="ja small">${esc(S.ja)}</p>
+          <p class="built ${done ? 'solved' : ''}">${done ? MARK : ''}<span>${esc(built)}${done ? esc(tailMark(S.en)) : ''}</span>${done ? '' : '<span class="caret"></span>'}</p>`,
+        // 使ったタイルは場所を動かさず、跡だけ残す（並びが変わると押し間違えるため）
+        bottom: `
+          <div class="tiles">${tiles.map(t => `
+            <button class="tile ${used.has(t.key) ? 'used' : ''} ${flash === t.key ? 'miss' : ''}"
+              data-key="${t.key}" ${used.has(t.key) ? 'disabled' : ''}>${esc(show(t.word))}</button>`).join('')}</div>
+          <p class="qnote">${esc(note)}</p>`,
+        // 完成したあとも場所は残す（消すと、タイルの位置が動いてしまうため）
+        actions: `<button class="btn quiet ${done ? 'ghost' : ''}" data-act="reset" ${done ? 'disabled' : ''}>最初からやり直す</button>`,
+      });
+    };
 
     const tap = async key => {
       const t = tiles.find(x => x.key === key);
@@ -283,7 +295,8 @@ export function runOrder(root, ctx) {
       }
       if (!missed.has(key)) { missed.add(key); wrong++; }
       buzz(settings); note = 'そこはまだ先です'; draw(key);
-      await wait(400); note = ''; draw();                  // 表示は元に戻す（13-9）
+      await wait(400); note = '';
+      if (!done) draw();                                   // 表示は元に戻す（13-9）
     };
 
     root.onclick = e => {

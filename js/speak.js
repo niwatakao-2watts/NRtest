@@ -4,6 +4,7 @@
 import { judge, diffLabel } from './judge.js';
 import { Listener, sttSupported, errorMessage, isFatal } from './stt.js';
 import { chime } from './audio.js';
+import { MARK } from './steps.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -11,7 +12,7 @@ const ICON = {
   speaker: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="stroke" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>',
   mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path class="stroke" d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6"/></svg>',
 };
-const SPEEDS = [['normal', 'ふつう'], ['slow', 'ゆっくり'], ['fast', 'はやい']];
+const SPEEDS = [['slow', 'ゆっくり'], ['normal', 'ふつう'], ['fast', 'はやい']];   // 遅い順に並べる
 
 /**
  * ctx: { sentence, voice, settings, mishear, extraAnswers, retryLimit, log(ev) }
@@ -46,9 +47,11 @@ export function runSpeak(root, ctx) {
 
       if (st.solved) {
         const one = st.first === 'ok' || st.first === 'ok_yure';
-        fb += `<p class="fb-big ok">${one ? '一発OK' : '言えました'}</p>`;
-        if (st.last && st.last.match === 'yure') fb += `<p class="fb-sub">「${esc(st.last.yure.to)}」と聞こえました（${esc(st.last.yure.from)} の発音を意識しましょう）</p>`;
-        if (st.last && st.last.match === 'extra') fb += `<p class="fb-sub">${st.last.extra.where === 'head' ? '先頭' : '最後'}に「${esc(st.last.extra.word)}」が入って聞こえましたが、文は言えています</p>`;
+        let sub = '';
+        if (st.last && st.last.match === 'yure') sub = `「${esc(st.last.yure.to)}」と聞こえました（${esc(st.last.yure.from)} の発音を意識しましょう）`;
+        if (st.last && st.last.match === 'extra') sub = `${st.last.extra.where === 'head' ? '先頭' : '最後'}に「${esc(st.last.extra.word)}」が入って聞こえましたが、文は言えています`;
+        fb += `<div class="result ${one ? 'ok' : 'mid'}">${MARK}<p class="fb-big">${one ? '一発OK' : '言えました'}</p>
+                 ${sub ? `<p class="fb-sub">${sub}</p>` : ''}</div>`;
         actions = `<button class="btn primary" data-act="to2">お手本で確かめる</button>`;
       } else if (st.self) {
         fb += `<p class="fb-sub">音声認識が使えないため、自分で判定してください。</p>`;
@@ -142,9 +145,9 @@ export function runSpeak(root, ctx) {
       const c = st.check;
       if (c && c.error) fb += `<p class="fb-sub">${esc(errorMessage(c.error))}</p>`;
       else if (c) {
-        if (c.match === 'exact') fb += `<p class="fb-big ok">お手本どおりに聞き取れました</p>`;
-        else if (c.match === 'extra') fb += `<p class="fb-big ok">言えています</p><p class="fb-sub">${c.extra.where === 'head' ? '先頭' : '最後'}に「${esc(c.extra.word)}」が入って聞こえました</p>`;
-        else if (c.match === 'yure') fb += `<p class="fb-big near">「${esc(c.yure.to)}」と聞こえました</p><p class="fb-sub">${esc(c.yure.from)} の発音を意識して、もう一度まねてみましょう</p>`;
+        if (c.match === 'exact') fb += `<div class="result ok small">${MARK}<p class="fb-big">お手本どおりです</p></div>`;
+        else if (c.match === 'extra') fb += `<div class="result ok small">${MARK}<p class="fb-big">言えています</p><p class="fb-sub">${c.extra.where === 'head' ? '先頭' : '最後'}に「${esc(c.extra.word)}」が入って聞こえました</p></div>`;
+        else if (c.match === 'yure') fb += `<div class="result near small"><p class="fb-big">「${esc(c.yure.to)}」と聞こえました</p><p class="fb-sub">${esc(c.yure.from)} の発音を意識して、もう一度まねてみましょう</p></div>`;
         else {
           fb += `<p class="fb-big">ちがうところ</p><ul class="diff">${c.ops.map(o => `<li>${esc(diffLabel(o))}</li>`).join('')}</ul>`;
           if (c.tailOnly) fb += `<p class="fb-sub">文のとちゅうから聞こえました。<strong>文の最初から</strong>言ってください</p>`;
@@ -153,10 +156,10 @@ export function runSpeak(root, ctx) {
       }
 
       // 音声のボタンは下にまとめ、繰り返し聞きやすくする（13-4）
+      // スピーカーの印は左に1つだけ置き、速さを3つ並べる。押すたびにその速さで再生する（4-1）
       const speedBtns = SPEEDS.map(([k, l]) => `
-        <button class="btn play ${st.speed === k ? 'on' : ''}" data-act="speed" data-speed="${k}"
-          ${listening ? 'disabled' : ''} aria-pressed="${st.speed === k}">${ICON.speaker}<span>${l}</span></button>`).join('');
-      // ↑ 押すたびにその速さで再生する（4-1）
+        <button class="playseg ${st.speed === k ? 'on' : ''}" data-act="speed" data-speed="${k}"
+          ${listening ? 'disabled' : ''} aria-pressed="${st.speed === k}">${l}</button>`).join('');
       root.innerHTML = `
         <section class="step" aria-label="段階2 確かめてまねる">
           <p class="stage-label"><span class="dot done"></span><span class="dot on"></span>確かめてまねる</p>
@@ -166,7 +169,7 @@ export function runSpeak(root, ctx) {
           </div>
           <div class="feedback" aria-live="polite">${fb}</div>
           <div class="actions">
-            <div class="plays" role="group" aria-label="お手本を聞く">${speedBtns}</div>
+            <div class="playbar" role="group" aria-label="お手本を聞く"><span class="playbar-icon">${ICON.speaker}</span>${speedBtns}</div>
             ${sttSupported() ? `<button class="btn mic ${listening ? (st.ready ? 'live' : 'preparing') : ''}" data-act="${listening ? 'stop' : 'check'}">${ICON.mic}<span>${esc(listening ? st.listenLabel : '言って確かめる')}</span></button>` : ''}
             <div class="pair">
               <button class="btn" data-act="later" ${listening ? 'disabled' : ''}>またあとで</button>
