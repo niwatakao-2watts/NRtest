@@ -344,7 +344,11 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   flex: none; min-width: 56px; min-height: 60px; border-radius: 12px; border: 0;
   background: var(--accent-soft); color: var(--accent); font-size: 1.3rem; font-weight: 700;
 }
-.step-btn:active { transform: scale(.95); }
+.step-btn {
+  /* 長押しで早送りするので、文字の選択やメニュー、ダブルタップの拡大が出ないようにする */
+  touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+.step-btn:active, .step-btn.holding { transform: scale(.95); background: var(--accent); color: var(--on-accent); }
 .step-val { flex: 1; min-width: 0; margin: 0; display: flex; flex-direction: column; justify-content: center; text-align: center; }
 .step-val b { font-size: 1.3rem; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
 .step-val small { font-size: .78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

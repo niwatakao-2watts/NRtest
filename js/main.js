@@ -159,18 +159,70 @@ function drillView(cards) {
         <div class="actions"><button class="btn primary big" data-act="go">${ICON.play}<span>はじめる</span></button></div>
       </main>`;
   };
+  // 番号が変わったときは、数字のところだけを書き換える
+  // （画面を作り直すと、長押ししているボタンが消えて、指を離したことが分からなくなるため）
+  const refresh = () => {
+    for (const [key, n] of [['from', from], ['to', to]]) {
+      const el = app.querySelector(`.step-val[data-val="${key}"]`);
+      if (el) el.innerHTML = `<b>${esc(all[n].id)}</b><small>${esc(all[n].ja)}</small>`;
+    }
+    const c = app.querySelector('.drill-count b');
+    if (c) c.textContent = to - from + 1;
+  };
+  /** 番号を動かす。動いたら true（端に着いて動かなかったら false） */
+  const moveBy = (key, by) => {
+    const before = `${from}-${to}`;
+    // 「から」が「まで」を追い越したら、もう一方も一緒に動かす
+    if (key === 'from') { from = clamp(from + by); if (from > to) to = from; }
+    else { to = clamp(to + by); if (to < from) from = to; }
+    refresh();
+    return before !== `${from}-${to}`;
+  };
+
+  // 長押しで早送り：押してすぐ1つ動き、押し続けると連続して動く。しばらく続けるとさらに速くなる
+  const HOLD_MS = 400, REPEAT_MS = 100, FAST_MS = 40, FAST_AFTER = 15;
+  let timer = null, held = null;
+  const release = () => {
+    clearTimeout(timer); timer = null;
+    if (held) held.classList.remove('holding');
+    held = null;
+  };
+  const press = btn => {
+    release();
+    held = btn; btn.classList.add('holding');
+    const key = btn.dataset.move, by = Number(btn.dataset.by);
+    moveBy(key, by);
+    let n = 0;
+    const tick = () => {
+      if (!moveBy(key, by)) return release();            // 端に着いたら止まる
+      timer = setTimeout(tick, ++n > FAST_AFTER ? FAST_MS : REPEAT_MS);
+    };
+    timer = setTimeout(tick, HOLD_MS);
+  };
+  // この画面を離れるときは、早送りを止めて、押下の受け取りも外す（他の画面に残さない）
+  const leave = () => {
+    release();
+    app.onpointerdown = app.onpointerup = app.onpointercancel = app.onpointerout = app.oncontextmenu = null;
+  };
+
+  app.onpointerdown = e => { const b = e.target.closest('[data-move]'); if (b) press(b); };
+  app.onpointerup = app.onpointercancel = release;
+  // 指（マウス）がボタンの外に出たら止める
+  app.onpointerout = e => { if (held && e.target.closest('[data-move]') === held && !held.contains(e.relatedTarget)) release(); };
+  // 長押しで、文字の選択やメニューが出ないようにする
+  app.oncontextmenu = e => { if (e.target.closest('[data-move]')) e.preventDefault(); };
+
   app.onclick = e => {
     const b = e.target.closest('[data-move],[data-act]'); if (!b) return;
-    if (b.dataset.act === 'back') return home();
+    if (b.dataset.act === 'back') { leave(); return home(); }
     if (b.dataset.act === 'go') {
+      leave();
       try { localStorage.setItem('eigo-drill', JSON.stringify({ from: all[from].id, to: all[to].id })); } catch (err) { /* 無視 */ }
       return session(all.slice(from, to + 1).map(x => ({ sid: x.id })), 'drill', cards);
     }
-    // 「から」が「まで」を追い越したら、もう一方も一緒に動かす
-    const by = Number(b.dataset.by);
-    if (b.dataset.move === 'from') { from = clamp(from + by); if (from > to) to = from; }
-    else { to = clamp(to + by); if (to < from) from = to; }
-    draw();
+    // 指やマウスで押した分は、押した瞬間（pointerdown）に動かしてある。
+    // ここで動かすのは、キーボードなど、押下を伴わない操作のときだけ（e.detail が 0）
+    if (b.dataset.move && e.detail === 0) moveBy(b.dataset.move, Number(b.dataset.by));
   };
   draw();
 }
